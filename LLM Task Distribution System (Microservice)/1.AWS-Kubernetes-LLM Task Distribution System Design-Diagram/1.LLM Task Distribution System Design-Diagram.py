@@ -7,19 +7,23 @@ from diagrams.k8s.compute import Pod
 from diagrams.k8s.network import Ingress
 from diagrams.k8s.storage import PV, PVC
 from diagrams.onprem.queue import Kafka
-from diagrams.programming.language import Python
-# from diagrams.saas.llm import OpenAI as OpenAI_Diagram, VertexAI, Anthropic
-from diagrams.generic.blank import Blank as OpenAI_Diagram
-from diagrams.generic.blank import Blank as VertexAI
-from diagrams.generic.blank import Blank as Anthropic
-from diagrams.generic.blank import Blank
+from diagrams.programming.language import Python 
+from diagrams.onprem.client import User
+from diagrams.custom import Custom
 from diagrams.generic.database import SQL
 # LLM Task Distribution System - Hệ thống Phân phối Task LLM (Microservice)
-with Diagram("LLM Task Distribution System (Microservice)", show=True):
-    user = Blank("Người dùng")
+with Diagram("LLM Task Distribution System (Microservice)", show=False):
+    user = User("Người dùng")
 
     with Cluster("Hạ tầng Cloud (ví dụ: AWS/Kubernetes)"):
         api_gateway = Ingress("API Gateway (Nginx/Kong)")
+
+        with Cluster("Task Processors"):
+            openai = Custom("OpenAI", "./../images/openai_icon.png")
+            genmini = Custom("Gemini", "./../images/genmini_icon.png")
+            anthropic = Custom("Anthropic", "./../images/claude_icon.png")
+            deepseek = Custom("DeepSeek", "./../images/deepseek_icon.png")
+            qwen = Custom("Qwen-2.5", "./../images/qwen_icon.png")
 
         with Cluster("Task Orchestration"):
             deepseek_r1 = Pod("DeepSeek R1 Service")
@@ -54,11 +58,11 @@ with Diagram("LLM Task Distribution System (Microservice)", show=True):
     deepseek_r1 >> api_gateway >> user
 
     # Kết nối đến LLM providers (biểu tượng minh họa)
-    openai_consumer >> Edge(label="OpenAI API") >> OpenAI_Diagram("OpenAI")
-    gemini_consumer >> Edge(label="Gemini API") >> VertexAI("Gemini")
-    claude_consumer >> Edge(label="Claude API") >> Anthropic("Claude")
-    deepseek_consumer >> Edge(label="DeepSeek API") >> Blank("DeepSeek API")
-    qwen_consumer >> Edge(label="Qwen-2.5 API") >> Blank("Qwen-2.5 API")
+    openai_consumer >> Edge(label="OpenAI API") >> openai
+    gemini_consumer >> Edge(label="Gemini API") >> genmini
+    claude_consumer >> Edge(label="Claude API") >> anthropic
+    deepseek_consumer >> Edge(label="DeepSeek API") >> deepseek
+    qwen_consumer >> Edge(label="Qwen-2.5 API") >> qwen
 
     # Kết nối đến Account Database (optional)
     openai_consumer >> account_db

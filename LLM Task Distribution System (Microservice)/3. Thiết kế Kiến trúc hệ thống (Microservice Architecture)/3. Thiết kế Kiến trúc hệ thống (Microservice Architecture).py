@@ -4,7 +4,7 @@ from diagrams.onprem.queue import Kafka
 from diagrams.aws.compute import EC2
 from diagrams.onprem.client import User
 
-with Diagram("he_thong_dieu_phoi_llm_da_tien_trinh", show=False):
+with Diagram("System Architecture Design (Microservice Architecture)", show=False):
     user = User("Người dùng")
 
     with Cluster("Task Management"):
