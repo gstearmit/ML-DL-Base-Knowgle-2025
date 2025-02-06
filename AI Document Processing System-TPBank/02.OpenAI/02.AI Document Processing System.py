@@ -6,17 +6,17 @@ from diagrams.onprem.client import Users
 from diagrams.onprem.network import Nginx
 from diagrams.programming.language import Python
 
-with Diagram("AI Document Processing System - Microservice Architecture", show=False):
+with Diagram("AWS TPBank - AI Document Processing System - Microservice Architecture", show=False):
     user = Users("User")
     gateway = Nginx("API Gateway")
 
-    with Cluster("File Processing Cluster"):
-        file_ingestion = Python("File Ingestion Service")
-        doc_processing = Python("Document Processing Service")
+    with Cluster("File Processing Cluster Service"):
+        file_ingestion = ECS("File Ingestion")      # File Ingestion Service
+        doc_processing = ECS("Document Processing") # Document Processing Service
     
-    with Cluster("AI & Embedding Cluster"):
-        ai_analysis = Python("Embedding & AI Analysis Service")
-        agile_service = Python("Document Standardization Service")
+    with Cluster("AI & Embedding Cluster Service"):
+        ai_analysis = ECS("Embedding & AI Analysis")
+        agile_service = ECS("Document Standardization")
     
     vector_db = Dynamodb("Vector Database")
     mq = SQS("Message Queue")
