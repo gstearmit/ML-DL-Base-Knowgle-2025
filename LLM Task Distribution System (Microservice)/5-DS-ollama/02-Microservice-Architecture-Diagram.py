@@ -98,13 +98,13 @@ with Diagram("02_Microservice_Architecture", show=False):
     prometheus >> Edge(label="Metrics") >> gateway
 
     # Tracing connections
-    jaeger >> Edge(label="Span Context") >> client
+    # jaeger >> Edge(label="Span Context") >> client
     jaeger >> Edge(label="Span Context") >> gateway
     jaeger >> Edge(label="Span Context") >> task_manager
     jaeger >> Edge(label="Span Context") >> orchestrator
 
     # Logging connections
-    client >> Edge(label="Logs") >> logstash
+    # client >> Edge(label="Logs") >> logstash
     gateway >> Edge(label="Logs") >> logstash
     task_manager >> Edge(label="Logs") >> logstash
     orchestrator >> Edge(label="Logs") >> logstash
