@@ -126,3 +126,26 @@ with Diagram("02_Microservice_Architecture", show=False):
     # CI/CD pipeline
     jenkins = Jenkins("CI/CD")
     jenkins >> gateway
+
+    # Ingress controller
+    ingress >> gateway  
+
+    # Monitoring
+    prometheus >> grafana
+
+    # Logging
+    logstash >> kibana
+    logstash >> metricbeat
+    logstash >> filebeat
+
+    # Data management
+    for db in vector_db:
+        for kg in knowledge_graph:
+            db >> kg
+    
+    for cache in cache_cluster:
+        gateway >> cache
+        task_manager >> cache
+      
+
+

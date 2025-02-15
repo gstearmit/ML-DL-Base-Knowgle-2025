@@ -23,7 +23,7 @@ with Diagram("02_Fixed_Microservice_Architecture", show=False):
     chroma = Custom("Chroma", "./icons/chroma.png")
     weaviate = Custom("Weaviate", "./icons/weaviate.png")
 
-    apache_jena = Custom("Apache Jena", "./icons/apache_jena.png")
+    apache_jena = Custom("Apache Jena", "./icons/apachejena.png")
     rdf4j = Custom("RDF4J", "./icons/rdf4j.png")
 
     client = Server("Client")
