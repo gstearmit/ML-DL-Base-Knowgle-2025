@@ -13,7 +13,7 @@ from diagramsNetworking import Consul
 from diagramsDatabase import Redis, MySQL
 from diagramsDevops import Jenkins
 
-with Diagram("Microservice Architecture", show=False) as diag:
+with Diagram("02_Microservice_Architecture", show=False) as diag:
     client = Server("Client")
     gateway = Server("API Gateway") << (OAuth2("Authentication"), JWT("Authorization"))
     
