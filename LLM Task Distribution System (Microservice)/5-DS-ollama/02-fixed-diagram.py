@@ -12,27 +12,23 @@ from diagrams.onprem.database import MySQL
 from diagrams.onprem.ci import Jenkins
 from diagrams.custom import Custom
 
-from diagrams.elastic.elasticsearch import Logstash, Kibana
-from diagrams.elastic.beats import Metricbeat, Filebeat
-from diagrams.k8s.network import Ingress as IngressController
+with Diagram("02_Fixed_Microservice_Architecture", show=False):
+    # Tạo các icon custom bên trong with Diagram(...)
+    logstash = Custom("Logstash", "./icons/logstash.png")
+    kibana = Custom("Kibana", "./icons/kibana.png")
+    metricbeat = Custom("Metricbeat", "./icons/metricbeat.png")
+    filebeat = Custom("Filebeat", "./icons/filebeat.png")
 
-with Diagram("02_Fixed_Microservice_Architecture", show=False) as diag:
-
-    # Tạo các icon custom
-    logstash = lambda: Custom("Logstash", "./icons/logstash.png")
-    kibana = lambda: Custom("Kibana", "./icons/kibana.png")
-    metricbeat = lambda: Custom("Metricbeat", "./icons/metricbeat.png")
-    filebeat = lambda: Custom("Filebeat", "./icons/filebeat.png")
-
-    pinecone = lambda: Custom("Pinecone", "./icons/pinecone.png")
-    chroma = lambda: Custom("Chroma", "./icons/chroma.png")
-    weaviate = lambda: Custom("Weaviate", "./icons/weaviate.png")
+    pinecone = Custom("Pinecone", "./icons/pinecone.png")
+    chroma = Custom("Chroma", "./icons/chroma.png")
+    weaviate = Custom("Weaviate", "./icons/weaviate.png")
 
     apache_jena = Custom("Apache Jena", "./icons/apache_jena.png")
     rdf4j = Custom("RDF4J", "./icons/rdf4j.png")
 
     client = Server("Client")
-    gateway = Server("API Gateway") << (OAuth2("Authentication"), JWT("Authorization"))
+    gateway = Server("API Gateway")
+    gateway << [OAuth2("Authentication"), JWT("Authorization")]
     
     with Cluster("Services"):
         task_manager = Server("Task Manager")
@@ -56,12 +52,6 @@ with Diagram("02_Fixed_Microservice_Architecture", show=False) as diag:
     
     with Cluster("Infrastructure"):
         load_balancer = LoadBalancer("API Gateway LB")
-
-    # with Cluster("Logging Pipeline"):
-    #     logstash = Logstash()
-    #     kibana = Kibana()
-    #     metricbeat = Metricbeat()
-    #     filebeat = Filebeat()    
     
     with Cluster("Logging Pipeline"):
         logging_pipeline = [Server("Graylog"), logstash, kibana, metricbeat, filebeat]
@@ -108,4 +98,4 @@ with Diagram("02_Fixed_Microservice_Architecture", show=False) as diag:
     # CI/CD pipeline
     Jenkins("CI/CD") >> gateway
 
-diag.view()
+ 
