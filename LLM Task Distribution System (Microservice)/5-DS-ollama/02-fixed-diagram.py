@@ -13,6 +13,7 @@ from diagrams.onprem.ci import Jenkins
 from diagrams.custom import Custom
 
 with Diagram("02_Fixed_Microservice_Architecture", show=False):
+    
     # Tạo các icon custom bên trong with Diagram(...)
     logstash = Custom("Logstash", "./icons/logstash.png")
     kibana = Custom("Kibana", "./icons/kibana.png")

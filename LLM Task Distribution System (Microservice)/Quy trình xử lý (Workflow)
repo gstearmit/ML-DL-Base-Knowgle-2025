@@ -1,0 +1,26 @@
+4. Quy trình xử lý (Workflow)
+1. File Upload:
+ - Người dùng upload file thông qua giao diện web.
+ - API Gateway (FastAPI) nhận và xác thực file, gửi thông điệp qua Kafka.
+
+2. File Ingestion & Processing:
+ - File Ingestion Service (Apache NiFi) nhận thông điệp, lấy file từ storage.
+ - Nếu file cần xử lý hình ảnh (jpg, png, mp4), sử dụng Tesseract để chuyển đổi sang văn bản.
+ - Document Processing Service trích xuất nội dung và metadata.
+
+3. AI Analysis & Embedding:
+ - Nội dung được gửi đến AI Core Service:
+ - Sử dụng GPT-4, Claude 3, Gemini để phân tích semantic, trích xuất ý chính.
+ - Sinh embedding từ nội dung và lưu vào Vector Database.
+
+4. Orchestration & Q&A:
+ - Orchestration Service (LangChain, LlamaIndex) kết hợp kết quả từ nhiều mô hình AI.
+ - Xây dựng hệ thống Q&A dựa trên embedding và truy vấn semantic.
+
+5.Visualization & Reporting:
+ - Visualization Service tạo tự động các sơ đồ (sequence, flow, kiến trúc) dựa trên dữ liệu xử lý.
+ - Hệ thống gợi ý chuyển đổi tài liệu thành báo cáo tiến độ (Gantt chart), cập nhật bug qua Jira, …
+
+6.Response & Integration:
+ - Kết quả cuối cùng được tổng hợp và trả về cho người dùng qua API.
+ - Tích hợp với các công cụ bên ngoài nếu cần.
