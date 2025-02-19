@@ -14,7 +14,9 @@ Có n tài khoản gmail được tạo trước và tương ứng với nó có
     sau đó Merge kết quả n tiến trình trên để cho LLM DeepSeek R1 đánh giá task hoàn thành
   - Tôi muốn chạy song song , đa tiến trình , tự động cân bằng các lần gọi các task với giới hạn limit của mối mô hình ngôn ngữ lớn . 
   - sử dụng với n tài khoản gmail để gọi API LLM như OpenAI , Claude , Genmini ,.... 
-  
+ 
+ Notes : Hãy bổ sung thêm Project (dự án) vào schema để chạy được xong song . đa tiến trình cho nhiều dự án cùng 1 lúc . Dự án được tạo qua API Gateway , push lúc đầu tiên , Dự án là duy nhất , Các Task con sẽ chỉ nhận Project Id duy nhất. Danh sách các task ngoài phân loại ưu tiên còn có status để lưu lại đánh dấu task đã được xử lí hay chưa và trạng thái của nó.
+
 Kết quả mong muốn :
   - Hãy dùng lib pip diagram python  trả về cho tôi 1 bản vẽ   Thiết kế Kiến trúc hệ thống (Microservice Architecture)
   - Dùng StartUML hãy vẽ biểu đồ Tuần tư từng luồng / flow mà bạn đã phân tích được.
