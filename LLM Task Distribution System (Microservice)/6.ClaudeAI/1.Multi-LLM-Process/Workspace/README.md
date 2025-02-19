@@ -218,3 +218,29 @@ For technical support:
 ## License
 
 This software is provided under [License Type]. See LICENSE file for details.
+
+
+
+### To implement these changes:
+
+1. Stop the current services:
+```bash
+docker-compose down
+```
+
+2. Remove existing volumes to ensure clean initialization:
+```bash
+docker volume prune -f
+```
+
+3. Start the services in the correct order:
+```bash
+docker-compose up -d
+```
+
+The services should now start properly and pass their health checks. You can monitor the startup process using:
+```bash
+docker-compose logs -f
+```
+
+Would you like me to provide additional details about any specific service configuration or help troubleshoot any remaining issues?
