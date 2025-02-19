@@ -1,0 +1,162 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: system-configs
+  namespace: llm-enterprise
+  labels:
+    app.kubernetes.io/part-of: llm-processing-system
+data:
+  ENVIRONMENT: "production"
+  LOG_LEVEL: "info"
+  TIMEZONE: "UTC"
+  MAX_REQUEST_SIZE: "10mb"
+  REQUEST_TIMEOUT: "30s"
+  RETRY_ATTEMPTS: "3"
+  CIRCUIT_BREAKER_THRESHOLD: "0.5"
+  RATE_LIMIT_WINDOW: "1m"
+  RATE_LIMIT_MAX_REQUESTS: "1000"
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: database-configs
+  namespace: llm-enterprise
+  labels:
+    app.kubernetes.io/part-of: llm-processing-system
+data:
+  POSTGRES_HOST: "postgres.llm-enterprise.svc.cluster.local"
+  POSTGRES_PORT: "5432"
+  POSTGRES_MAX_CONNECTIONS: "100"
+  POSTGRES_STATEMENT_TIMEOUT: "30s"
+  POSTGRES_IDLE_IN_TRANSACTION_SESSION_TIMEOUT: "60s"
+  POSTGRES_SSL_MODE: "verify-full"
+  postgresql.conf: |
+    max_connections = 100
+    shared_buffers = 8GB
+    effective_cache_size = 24GB
+    work_mem = 32MB
+    maintenance_work_mem = 1GB
+    random_page_cost = 1.1
+    effective_io_concurrency = 200
+    wal_buffers = 16MB
+    max_wal_size = 4GB
+    checkpoint_timeout = 15min
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: redis-configs
+  namespace: llm-enterprise
+  labels:
+    app.kubernetes.io/part-of: llm-processing-system
+data:
+  REDIS_HOST: "redis.llm-enterprise.svc.cluster.local"
+  REDIS_PORT: "6379"
+  REDIS_DB_INDEX: "0"
+  REDIS_MAX_CONNECTIONS: "100"
+  REDIS_TIMEOUT: "5s"
+  redis.conf: |
+    maxmemory 8gb
+    maxmemory-policy allkeys-lru
+    timeout 300
+    tcp-keepalive 300
+    databases 16
+    save 900 1
+    save 300 10
+    save 60 10000
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: llm-model-configs
+  namespace: llm-enterprise
+  labels:
+    app.kubernetes.io/part-of: llm-processing-system
+data:
+  MODEL_TIMEOUT: "60s"
+  MAX_TOKENS: "2048"
+  TEMPERATURE: "0.7"
+  TOP_P: "0.9"
+  FREQUENCY_PENALTY: "0.0"
+  PRESENCE_PENALTY: "0.0"
+  DEFAULT_CONTEXT_LENGTH: "4096"
+  model-config.json: |
+    {
+      "gpt-4": {
+        "max_tokens": 8192,
+        "temperature": 0.7,
+        "timeout": 120
+      },
+      "claude-3": {
+        "max_tokens": 4096,
+        "temperature": 0.7,
+        "timeout": 60
+      },
+      "gemini-pro": {
+        "max_tokens": 2048,
+        "temperature": 0.8,
+        "timeout": 30
+      }
+    }
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: monitoring-configs
+  namespace: llm-enterprise
+  labels:
+    app.kubernetes.io/part-of: llm-processing-system
+data:
+  PROMETHEUS_SCRAPE_INTERVAL: "15s"
+  GRAFANA_DASHBOARD_REFRESH: "1m"
+  prometheus.yml: |
+    global:
+      scrape_interval: 15s
+      evaluation_interval: 15s
+    rule_files:
+      - /etc/prometheus/rules/*.yml
+    scrape_configs:
+      - job_name: 'kubernetes-pods'
+        kubernetes_sd_configs:
+          - role: pod
+  grafana-datasources.yml: |
+    apiVersion: 1
+    datasources:
+      - name: Prometheus
+        type: prometheus
+        access: proxy
+        url: http://prometheus:9090
+        isDefault: true
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: backup-configs
+  namespace: llm-enterprise
+  labels:
+    app.kubernetes.io/part-of: llm-processing-system
+data:
+  BACKUP_RETENTION_DAYS: "30"
+  BACKUP_SCHEDULE: "0 2 * * *"
+  BACKUP_COMPRESSION_LEVEL: "6"
+  S3_BUCKET: "llm-enterprise-backups"
+  S3_REGION: "us-east-1"
+  S3_ENDPOINT: "s3.amazonaws.com"
+  backup-policy.json: |
+    {
+      "Version": "2012-10-17",
+      "Statement": [
+        {
+          "Effect": "Allow",
+          "Action": [
+            "s3:PutObject",
+            "s3:GetObject",
+            "s3:ListBucket",
+            "s3:DeleteObject"
+          ],
+          "Resource": [
+            "arn:aws:s3:::llm-enterprise-backups/*"
+          ]
+        }
+      ]
+    }

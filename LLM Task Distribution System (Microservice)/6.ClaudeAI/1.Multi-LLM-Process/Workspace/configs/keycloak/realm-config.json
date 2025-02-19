@@ -1,0 +1,205 @@
+{
+    "realm": "llm-enterprise",
+    "enabled": true,
+    "displayName": "LLM Enterprise System",
+    "displayNameHtml": "<div class=\"kc-logo-text\">LLM Enterprise System</div>",
+    "bruteForceProtected": true,
+    "permanentLockout": false,
+    "maxFailureWaitSeconds": 900,
+    "minimumQuickLoginWaitSeconds": 60,
+    "waitIncrementSeconds": 60,
+    "quickLoginCheckMilliSeconds": 1000,
+    "maxDeltaTimeSeconds": 43200,
+    "failureFactor": 3,
+    
+    "roles": {
+        "realm": [
+            {
+                "name": "system_admin",
+                "description": "System Administrator with full access",
+                "composite": true,
+                "composites": {
+                    "realm": ["manage_users", "view_metrics", "manage_models"]
+                }
+            },
+            {
+                "name": "model_manager",
+                "description": "Manages LLM models and configurations",
+                "composite": false
+            },
+            {
+                "name": "api_user",
+                "description": "API access for LLM processing",
+                "composite": false
+            },
+            {
+                "name": "metrics_viewer",
+                "description": "Access to system metrics and monitoring",
+                "composite": false
+            }
+        ]
+    },
+
+    "clients": [
+        {
+            "clientId": "llm-api-service",
+            "name": "LLM API Service",
+            "enabled": true,
+            "clientAuthenticatorType": "client-secret",
+            "secret": "${API_CLIENT_SECRET}",
+            "redirectUris": [
+                "https://api.llm-system.com/*",
+                "http://localhost:8080/*"
+            ],
+            "webOrigins": [
+                "https://api.llm-system.com",
+                "http://localhost:8080"
+            ],
+            "protocol": "openid-connect",
+            "publicClient": false,
+            "authorizationServicesEnabled": true,
+            "serviceAccountsEnabled": true,
+            "directAccessGrantsEnabled": true,
+            "standardFlowEnabled": true,
+            "implicitFlowEnabled": false,
+            "attributes": {
+                "access.token.lifespan": 3600,
+                "refresh.token.lifespan": 86400
+            }
+        },
+        {
+            "clientId": "admin-dashboard",
+            "name": "Administration Dashboard",
+            "enabled": true,
+            "clientAuthenticatorType": "client-secret",
+            "secret": "${ADMIN_CLIENT_SECRET}",
+            "baseUrl": "https://admin.llm-system.com",
+            "redirectUris": [
+                "https://admin.llm-system.com/*"
+            ],
+            "webOrigins": [
+                "https://admin.llm-system.com"
+            ],
+            "protocol": "openid-connect",
+            "publicClient": true,
+            "standardFlowEnabled": true,
+            "attributes": {
+                "access.token.lifespan": 1800,
+                "refresh.token.lifespan": 43200
+            }
+        }
+    ],
+
+    "users": [
+        {
+            "username": "system.admin",
+            "enabled": true,
+            "emailVerified": true,
+            "firstName": "System",
+            "lastName": "Administrator",
+            "email": "admin@llm-system.com",
+            "credentials": [
+                {
+                    "type": "password",
+                    "value": "${ADMIN_PASSWORD}",
+                    "temporary": false
+                }
+            ],
+            "requiredActions": [],
+            "realmRoles": ["system_admin"],
+            "attributes": {
+                "phoneNumber": "${ADMIN_PHONE}"
+            }
+        }
+    ],
+
+    "authentication": {
+        "browserFlow": "browser",
+        "requiredActions": [
+            {
+                "alias": "CONFIGURE_TOTP",
+                "name": "Configure OTP",
+                "providerId": "CONFIGURE_TOTP",
+                "enabled": true,
+                "defaultAction": true,
+                "priority": 10
+            },
+            {
+                "alias": "terms_and_conditions",
+                "name": "Terms and Conditions",
+                "providerId": "terms_and_conditions",
+                "enabled": true,
+                "defaultAction": false,
+                "priority": 20
+            },
+            {
+                "alias": "UPDATE_PASSWORD",
+                "name": "Update Password",
+                "providerId": "UPDATE_PASSWORD",
+                "enabled": true,
+                "defaultAction": false,
+                "priority": 30
+            }
+        ]
+    },
+
+    "passwordPolicy": "length(12) and upperCase(1) and lowerCase(1) and digits(1) and specialChars(1) and notUsername()",
+
+    "otpPolicy": {
+        "type": "totp",
+        "algorithm": "HmacSHA1",
+        "initialCounter": 0,
+        "digits": 6,
+        "lookAheadWindow": 1,
+        "period": 30
+    },
+
+    "webAuthn": {
+        "passwordless": {
+            "enabled": true,
+            "relyingPartyName": "LLM Enterprise System",
+            "signatureAlgorithms": ["ES256", "RS256"],
+            "attestationConveyancePreference": "direct",
+            "authenticatorAttachment": "cross-platform",
+            "requireResidentKey": false,
+            "userVerificationRequirement": "preferred"
+        }
+    },
+
+    "smtp": {
+        "host": "${SMTP_HOST}",
+        "port": "587",
+        "from": "no-reply@llm-system.com",
+        "fromDisplayName": "LLM Enterprise System",
+        "replyTo": "support@llm-system.com",
+        "replyToDisplayName": "LLM System Support",
+        "envelopeFrom": "no-reply@llm-system.com",
+        "ssl": false,
+        "starttls": true,
+        "auth": true,
+        "user": "${SMTP_USER}",
+        "password": "${SMTP_PASSWORD}"
+    },
+
+    "internationalizationEnabled": true,
+    "supportedLocales": ["en", "es", "fr", "de", "zh"],
+    "defaultLocale": "en",
+    "browserFlow": "browser",
+    "registrationFlow": "registration",
+    "directGrantFlow": "direct grant",
+    "resetCredentialsFlow": "reset credentials",
+    "clientAuthenticationFlow": "clients",
+    
+    "dockerAuthenticationFlow": "docker auth",
+    "attributes": {
+        "frontendUrl": "https://llm-system.com",
+        "adminUrl": "https://admin.llm-system.com",
+        "_browser_header.contentSecurityPolicy": "frame-src 'self'; frame-ancestors 'self'; object-src 'none';",
+        "_browser_header.xFrameOptions": "SAMEORIGIN",
+        "_browser_header.xContentTypeOptions": "nosniff",
+        "_browser_header.xRobotsTag": "none",
+        "_browser_header.xXSSProtection": "1; mode=block",
+        "displayName": "LLM Enterprise System",
+        "passwordPolicyWarningMessage": "Please ensure your password meets the security requirements."
+    }
+}

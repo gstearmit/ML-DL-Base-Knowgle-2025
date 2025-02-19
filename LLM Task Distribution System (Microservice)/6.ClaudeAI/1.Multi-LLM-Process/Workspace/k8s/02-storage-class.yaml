@@ -1,0 +1,94 @@
+apiVersion: storage.k8s.io/v1
+kind: StorageClass
+metadata:
+  name: llm-high-performance
+  labels:
+    app.kubernetes.io/part-of: llm-processing-system
+    storage.kubernetes.io/tier: premium
+annotations:
+  storageclass.kubernetes.io/is-default-class: "false"
+provisioner: kubernetes.io/aws-ebs
+parameters:
+  type: io2
+  iopsPerGB: "50"
+  encrypted: "true"
+  kmsKeyId: ${KMS_KEY_ID}
+reclaimPolicy: Retain
+allowVolumeExpansion: true
+volumeBindingMode: WaitForFirstConsumer
+---
+apiVersion: storage.k8s.io/v1
+kind: StorageClass
+metadata:
+  name: llm-standard
+  labels:
+    app.kubernetes.io/part-of: llm-processing-system
+    storage.kubernetes.io/tier: standard
+annotations:
+  storageclass.kubernetes.io/is-default-class: "true"
+provisioner: kubernetes.io/aws-ebs
+parameters:
+  type: gp3
+  encrypted: "true"
+  kmsKeyId: ${KMS_KEY_ID}
+reclaimPolicy: Delete
+allowVolumeExpansion: true
+volumeBindingMode: WaitForFirstConsumer
+---
+apiVersion: storage.k8s.io/v1
+kind: StorageClass
+metadata:
+  name: llm-backup
+  labels:
+    app.kubernetes.io/part-of: llm-processing-system
+    storage.kubernetes.io/tier: backup
+annotations:
+  storageclass.kubernetes.io/is-default-class: "false"
+provisioner: kubernetes.io/aws-ebs
+parameters:
+  type: st1
+  encrypted: "true"
+  kmsKeyId: ${KMS_KEY_ID}
+reclaimPolicy: Retain
+allowVolumeExpansion: true
+volumeBindingMode: WaitForFirstConsumer
+---
+apiVersion: storage.k8s.io/v1
+kind: StorageClass
+metadata:
+  name: llm-cache
+  labels:
+    app.kubernetes.io/part-of: llm-processing-system
+    storage.kubernetes.io/tier: cache
+annotations:
+  storageclass.kubernetes.io/is-default-class: "false"
+provisioner: kubernetes.io/aws-ebs
+parameters:
+  type: gp3
+  encrypted: "true"
+  kmsKeyId: ${KMS_KEY_ID}
+reclaimPolicy: Delete
+allowVolumeExpansion: true
+volumeBindingMode: WaitForFirstConsumer
+mountOptions:
+  - noatime
+  - nodiratime
+---
+apiVersion: storage.k8s.io/v1
+kind: StorageClass
+metadata:
+  name: llm-model-storage
+  labels:
+    app.kubernetes.io/part-of: llm-processing-system
+    storage.kubernetes.io/tier: models
+annotations:
+  storageclass.kubernetes.io/is-default-class: "false"
+provisioner: kubernetes.io/aws-ebs
+parameters:
+  type: io2
+  iopsPerGB: "100"
+  encrypted: "true"
+  kmsKeyId: ${KMS_KEY_ID}
+reclaimPolicy: Retain
+allowVolumeExpansion: true
+volumeBindingMode: WaitForFirstConsumer
