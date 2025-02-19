@@ -1,0 +1,160 @@
+digraph "Hệ Thống Xử Lý Đa LLM - Kiến Trúc Chi Tiết" {
+	graph [fontcolor="#2D3436" fontname="Sans-Serif" fontsize=15 label="Hệ Thống Xử Lý Đa LLM - Kiến Trúc Chi Tiết" nodesep=0.60 pad=2.0 rankdir=TB ranksep=0.75 splines=ortho]
+	node [fixedsize=true fontcolor="#2D3436" fontname="Sans-Serif" fontsize=13 height=1.4 imagescale=true labelloc=b shape=box style=rounded width=1.4]
+	edge [color="#7B8894"]
+	subgraph "cluster_Tầng Người Dùng" {
+		graph [bgcolor="#E5F5FD" fontname="Sans-Serif" fontsize=12 label="Tầng Người Dùng" labeljust=l pencolor="#AEB6BE" rankdir=LR shape=box style=rounded]
+		"7bf5bb9e9f644bb68d63007347304558" [label="Ứng dụng Client" height=1.9 image="E:\anacoda3\envs\python_3_10_16\lib\site-packages\resources/programming/framework\react.png" shape=none]
+		"4581c763f108461fbc61a4e1785fd2e0" [label=CDN height=1.9 image="E:\anacoda3\envs\python_3_10_16\lib\site-packages\resources/aws/network\cloudfront.png" shape=none]
+	}
+	"00c5223b459241239a4fd8c1bcf95c8d" -> befeceaff321447a91cae8c3d64c9b0c [color="#1E88E5" dir=forward fontcolor="#2D3436" fontname="Sans-Serif" fontsize=13]
+	befeceaff321447a91cae8c3d64c9b0c -> "6af89a72eeb74d8eba8325a219d6583e" [color="#1E88E5" dir=forward fontcolor="#2D3436" fontname="Sans-Serif" fontsize=13]
+	"6af89a72eeb74d8eba8325a219d6583e" -> "17bc9555fe5d41d98f7720ee1b0b59c8" [dir=none fontcolor="#2D3436" fontname="Sans-Serif" fontsize=13]
+	subgraph "cluster_Tầng Bảo Mật" {
+		graph [bgcolor="#E5F5FD" fontname="Sans-Serif" fontsize=12 label="Tầng Bảo Mật" labeljust=l pencolor="#AEB6BE" rankdir=LR shape=box style=rounded]
+		befeceaff321447a91cae8c3d64c9b0c [label="Web Application
+Firewall" height=2.3 image="E:\anacoda3\envs\python_3_10_16\lib\site-packages\resources/aws/security\waf.png" shape=none]
+		"00c5223b459241239a4fd8c1bcf95c8d" [label="API Gateway" height=1.9 image="E:\anacoda3\envs\python_3_10_16\lib\site-packages\resources/aws/network\api-gateway.png" shape=none]
+		"6af89a72eeb74d8eba8325a219d6583e" [label="Dịch vụ Xác thực" height=1.9 image="E:\anacoda3\envs\python_3_10_16\lib\site-packages\resources/aws/security\identity-and-access-management-iam.png" shape=none]
+		"17bc9555fe5d41d98f7720ee1b0b59c8" [label="Kho Token" height=1.9 image="E:\anacoda3\envs\python_3_10_16\lib\site-packages\resources/aws/storage\simple-storage-service-s3.png" shape=none]
+	}
+	"5e57f51642ad413bb1b4d35c025bb804" -> b7b55f7836b04e348d9aa41f0b23c919 [color="#00ACC1" dir=forward fontcolor="#2D3436" fontname="Sans-Serif" fontsize=13]
+	b7b55f7836b04e348d9aa41f0b23c919 -> a97517d79e8e45cdafab27f19f812c37 [dir=forward fontcolor="#2D3436" fontname="Sans-Serif" fontsize=13]
+	subgraph "cluster_Tầng Validation" {
+		graph [bgcolor="#E5F5FD" fontname="Sans-Serif" fontsize=12 label="Tầng Validation" labeljust=l pencolor="#AEB6BE" rankdir=LR shape=box style=rounded]
+		"5e57f51642ad413bb1b4d35c025bb804" [label="Kiểm tra
+Đầu vào" height=2.3 image="E:\anacoda3\envs\python_3_10_16\lib\site-packages\resources/k8s/compute\pod.png" shape=none]
+		b7b55f7836b04e348d9aa41f0b23c919 [label="Làm sạch
+Dữ liệu" height=2.3 image="E:\anacoda3\envs\python_3_10_16\lib\site-packages\resources/k8s/compute\pod.png" shape=none]
+		a97517d79e8e45cdafab27f19f812c37 [label="Kiểm tra
+Schema" height=2.3 image="E:\anacoda3\envs\python_3_10_16\lib\site-packages\resources/k8s/compute\pod.png" shape=none]
+	}
+	d2fdd35d6d9b45e68739df9badbb4ecb -> "67a3ef9a3aa64d38ae8fbcbdc3c35fc2" [dir=forward fontcolor="#2D3436" fontname="Sans-Serif" fontsize=13]
+	"67a3ef9a3aa64d38ae8fbcbdc3c35fc2" -> "95fc13021d6545cf98715c37059f8f47" [dir=forward fontcolor="#2D3436" fontname="Sans-Serif" fontsize=13]
+	"95fc13021d6545cf98715c37059f8f47" -> "0d4c3867c28d4caeb892ed78d25d7314" [dir=none fontcolor="#2D3436" fontname="Sans-Serif" fontsize=13]
+	d2fdd35d6d9b45e68739df9badbb4ecb -> "97a67534b8384b3d86eced3283ed4ed2" [dir=none fontcolor="#2D3436" fontname="Sans-Serif" fontsize=13]
+	subgraph "cluster_Tầng Quản Lý Tác Vụ" {
+		graph [bgcolor="#E5F5FD" fontname="Sans-Serif" fontsize=12 label="Tầng Quản Lý Tác Vụ" labeljust=l pencolor="#AEB6BE" rankdir=LR shape=box style=rounded]
+		d2fdd35d6d9b45e68739df9badbb4ecb [label="Quản lý Tác vụ" height=1.9 image="E:\anacoda3\envs\python_3_10_16\lib\site-packages\resources/onprem/compute\server.png" shape=none]
+		"67a3ef9a3aa64d38ae8fbcbdc3c35fc2" [label="DeepSeek
+Orchestrator" height=2.3 image="E:\anacoda3\envs\python_3_10_16\lib\site-packages\resources/k8s/compute\pod.png" shape=none]
+		"95fc13021d6545cf98715c37059f8f47" [label="Phân tích
+Tác vụ" height=2.3 image="E:\anacoda3\envs\python_3_10_16\lib\site-packages\resources/k8s/compute\pod.png" shape=none]
+		"0d4c3867c28d4caeb892ed78d25d7314" [label="CSDL Tác vụ" height=1.9 image="E:\anacoda3\envs\python_3_10_16\lib\site-packages\resources/aws/database\rds.png" shape=none]
+		"97a67534b8384b3d86eced3283ed4ed2" [label="Cache Tác vụ" height=1.9 image="E:\anacoda3\envs\python_3_10_16\lib\site-packages\resources/aws/database\elasticache.png" shape=none]
+	}
+	"21b138b4cfb047e2be4376dd56eb9241" -> f943ed44320f4d60b148834f082acb15 [color="#43A047" dir=forward fontcolor="#2D3436" fontname="Sans-Serif" fontsize=13]
+	"21b138b4cfb047e2be4376dd56eb9241" -> ba1ac87f113d4440b129b78d7363de26 [color="#43A047" dir=forward fontcolor="#2D3436" fontname="Sans-Serif" fontsize=13]
+	"21b138b4cfb047e2be4376dd56eb9241" -> ac5d2ae2cb084ad29b8e84294f1a56a4 [color="#43A047" dir=forward fontcolor="#2D3436" fontname="Sans-Serif" fontsize=13]
+	"21b138b4cfb047e2be4376dd56eb9241" -> "3b38251168ab42f9b1306ae4897d380d" [color="#E53935" dir=forward fontcolor="#2D3436" fontname="Sans-Serif" fontsize=13]
+	subgraph "cluster_Tầng Message Queue" {
+		graph [bgcolor="#E5F5FD" fontname="Sans-Serif" fontsize=12 label="Tầng Message Queue" labeljust=l pencolor="#AEB6BE" rankdir=LR shape=box style=rounded]
+		"21b138b4cfb047e2be4376dd56eb9241" [label="Kafka Broker" height=1.9 image="E:\anacoda3\envs\python_3_10_16\lib\site-packages\resources/onprem/queue\kafka.png" shape=none]
+		f943ed44320f4d60b148834f082acb15 [label="Queue 1" height=1.9 image="E:\anacoda3\envs\python_3_10_16\lib\site-packages\resources/aws/integration\simple-queue-service-sqs.png" shape=none]
+		ba1ac87f113d4440b129b78d7363de26 [label="Queue 2" height=1.9 image="E:\anacoda3\envs\python_3_10_16\lib\site-packages\resources/aws/integration\simple-queue-service-sqs.png" shape=none]
+		ac5d2ae2cb084ad29b8e84294f1a56a4 [label="Queue 3" height=1.9 image="E:\anacoda3\envs\python_3_10_16\lib\site-packages\resources/aws/integration\simple-queue-service-sqs.png" shape=none]
+		"3b38251168ab42f9b1306ae4897d380d" [label="Dead Letter
+Queue" height=2.3 image="E:\anacoda3\envs\python_3_10_16\lib\site-packages\resources/aws/integration\simple-queue-service-sqs.png" shape=none]
+	}
+	"6fa33f3b54ee41829702cfe8cd99ba03" -> "50b2e12b4fa0451a8da50eab902b8e94" [dir=forward fontcolor="#2D3436" fontname="Sans-Serif" fontsize=13]
+	"50b2e12b4fa0451a8da50eab902b8e94" -> "790450ba5c04476fbfd41bd1c396fc69" [dir=forward fontcolor="#2D3436" fontname="Sans-Serif" fontsize=13]
+	"6fa33f3b54ee41829702cfe8cd99ba03" -> def764f9c8074d2f8a7d3675d1549990 [dir=none fontcolor="#2D3436" fontname="Sans-Serif" fontsize=13]
+	"6fa33f3b54ee41829702cfe8cd99ba03" -> a84ec96abdd742b798ba8214bf447fb7 [dir=none fontcolor="#2D3436" fontname="Sans-Serif" fontsize=13]
+	subgraph "cluster_Tầng Quản Lý Tài Khoản" {
+		graph [bgcolor="#E5F5FD" fontname="Sans-Serif" fontsize=12 label="Tầng Quản Lý Tài Khoản" labeljust=l pencolor="#AEB6BE" rankdir=LR shape=box style=rounded]
+		"6fa33f3b54ee41829702cfe8cd99ba03" [label="Dịch vụ
+Tài khoản" height=2.3 image="E:\anacoda3\envs\python_3_10_16\lib\site-packages\resources/k8s/compute\sts.png" shape=none]
+		"50b2e12b4fa0451a8da50eab902b8e94" [label="Giới hạn
+Tốc độ" height=2.3 image="E:\anacoda3\envs\python_3_10_16\lib\site-packages\resources/k8s/compute\pod.png" shape=none]
+		"790450ba5c04476fbfd41bd1c396fc69" [label="Cân bằng
+Tải" height=2.3 image="E:\anacoda3\envs\python_3_10_16\lib\site-packages\resources/k8s/network\svc.png" shape=none]
+		def764f9c8074d2f8a7d3675d1549990 [label="CSDL
+Tài khoản" height=2.3 image="E:\anacoda3\envs\python_3_10_16\lib\site-packages\resources/aws/database\rds.png" shape=none]
+		a84ec96abdd742b798ba8214bf447fb7 [label="Cache
+Tài khoản" height=2.3 image="E:\anacoda3\envs\python_3_10_16\lib\site-packages\resources/aws/database\elasticache.png" shape=none]
+	}
+	"5f48aa84eab2451e9e273d0556240020" -> de3a775029fa4078b09dcc8cae5d822d [dir=forward fontcolor="#2D3436" fontname="Sans-Serif" fontsize=13]
+	de3a775029fa4078b09dcc8cae5d822d -> b6a2ce7155554260b468e0530eb797ce [dir=forward fontcolor="#2D3436" fontname="Sans-Serif" fontsize=13]
+	"5f48aa84eab2451e9e273d0556240020" -> ea59df701eb1496fa7b01cd93b6d4dfc [dir=forward fontcolor="#2D3436" fontname="Sans-Serif" fontsize=13]
+	ea59df701eb1496fa7b01cd93b6d4dfc -> b6a2ce7155554260b468e0530eb797ce [dir=forward fontcolor="#2D3436" fontname="Sans-Serif" fontsize=13]
+	"5f48aa84eab2451e9e273d0556240020" -> f61b36fa4d52431c81a494cb6d18ed8d [dir=forward fontcolor="#2D3436" fontname="Sans-Serif" fontsize=13]
+	f61b36fa4d52431c81a494cb6d18ed8d -> b6a2ce7155554260b468e0530eb797ce [dir=forward fontcolor="#2D3436" fontname="Sans-Serif" fontsize=13]
+	"5f48aa84eab2451e9e273d0556240020" -> d503dfe298c9434fa347140b4777fb27 [dir=forward fontcolor="#2D3436" fontname="Sans-Serif" fontsize=13]
+	d503dfe298c9434fa347140b4777fb27 -> b6a2ce7155554260b468e0530eb797ce [dir=forward fontcolor="#2D3436" fontname="Sans-Serif" fontsize=13]
+	"5f48aa84eab2451e9e273d0556240020" -> f76f45f9b89f4d09b582036f2dd36045 [dir=forward fontcolor="#2D3436" fontname="Sans-Serif" fontsize=13]
+	f76f45f9b89f4d09b582036f2dd36045 -> b6a2ce7155554260b468e0530eb797ce [dir=forward fontcolor="#2D3436" fontname="Sans-Serif" fontsize=13]
+	b6a2ce7155554260b468e0530eb797ce -> b7fd7c8e3bd04e5c98f0781e895b330b [dir=none fontcolor="#2D3436" fontname="Sans-Serif" fontsize=13]
+	subgraph "cluster_Tầng Xử Lý LLM" {
+		graph [bgcolor="#E5F5FD" fontname="Sans-Serif" fontsize=12 label="Tầng Xử Lý LLM" labeljust=l pencolor="#AEB6BE" rankdir=LR shape=box style=rounded]
+		de3a775029fa4078b09dcc8cae5d822d [label="OpenAI
+Workers" height=2.3 image="E:\anacoda3\envs\python_3_10_16\lib\site-packages\resources/k8s/compute\deploy.png" shape=none]
+		ea59df701eb1496fa7b01cd93b6d4dfc [label="Claude
+Workers" height=2.3 image="E:\anacoda3\envs\python_3_10_16\lib\site-packages\resources/k8s/compute\deploy.png" shape=none]
+		f61b36fa4d52431c81a494cb6d18ed8d [label="Gemini
+Workers" height=2.3 image="E:\anacoda3\envs\python_3_10_16\lib\site-packages\resources/k8s/compute\deploy.png" shape=none]
+		d503dfe298c9434fa347140b4777fb27 [label="DeepSeek
+Workers" height=2.3 image="E:\anacoda3\envs\python_3_10_16\lib\site-packages\resources/k8s/compute\deploy.png" shape=none]
+		f76f45f9b89f4d09b582036f2dd36045 [label="Qwen
+Workers" height=2.3 image="E:\anacoda3\envs\python_3_10_16\lib\site-packages\resources/k8s/compute\deploy.png" shape=none]
+		"5f48aa84eab2451e9e273d0556240020" [label="Tự động
+Mở rộng" height=2.3 image="E:\anacoda3\envs\python_3_10_16\lib\site-packages\resources/aws/compute\application-auto-scaling.png" shape=none]
+		b6a2ce7155554260b468e0530eb797ce [label="Thu thập
+Kết quả" height=2.3 image="E:\anacoda3\envs\python_3_10_16\lib\site-packages\resources/k8s/compute\sts.png" shape=none]
+		b7fd7c8e3bd04e5c98f0781e895b330b [label="Cache
+Kết quả" height=2.3 image="E:\anacoda3\envs\python_3_10_16\lib\site-packages\resources/aws/database\elasticache.png" shape=none]
+	}
+	b6a2ce7155554260b468e0530eb797ce -> "4e6ff9d5ba2240a895a2c996910f8376" [dir=forward fontcolor="#2D3436" fontname="Sans-Serif" fontsize=13]
+	"4e6ff9d5ba2240a895a2c996910f8376" -> "4f9f0c757f834152b0914e482d033d7e" [dir=forward fontcolor="#2D3436" fontname="Sans-Serif" fontsize=13]
+	"4f9f0c757f834152b0914e482d033d7e" -> c620357017cc46b58b64b0256677563f [dir=none fontcolor="#2D3436" fontname="Sans-Serif" fontsize=13]
+	subgraph "cluster_Tầng Xử Lý Kết quả" {
+		graph [bgcolor="#E5F5FD" fontname="Sans-Serif" fontsize=12 label="Tầng Xử Lý Kết quả" labeljust=l pencolor="#AEB6BE" rankdir=LR shape=box style=rounded]
+		"4e6ff9d5ba2240a895a2c996910f8376" [label="Trộn
+Kết quả" height=2.3 image="E:\anacoda3\envs\python_3_10_16\lib\site-packages\resources/aws/analytics\emr.png" shape=none]
+		"4f9f0c757f834152b0914e482d033d7e" [label="Phân tích
+Cuối cùng" height=2.3 image="E:\anacoda3\envs\python_3_10_16\lib\site-packages\resources/k8s/compute\pod.png" shape=none]
+		c620357017cc46b58b64b0256677563f [label="CSDL
+Kết quả" height=2.3 image="E:\anacoda3\envs\python_3_10_16\lib\site-packages\resources/aws/database\rds.png" shape=none]
+	}
+	"7701160ffa0a49debb4b5693e7addbbd" -> "73e45b5b1f8348be967b68100c241e89" [dir=forward fontcolor="#2D3436" fontname="Sans-Serif" fontsize=13]
+	f363b0b8301a45a082a1ec5fff52e3b4 -> "73e45b5b1f8348be967b68100c241e89" [dir=forward fontcolor="#2D3436" fontname="Sans-Serif" fontsize=13]
+	"4171224bf4ed4a5994382e6298d508e5" -> "73e45b5b1f8348be967b68100c241e89" [dir=forward fontcolor="#2D3436" fontname="Sans-Serif" fontsize=13]
+	subgraph "cluster_Tầng Giám sát" {
+		graph [bgcolor="#E5F5FD" fontname="Sans-Serif" fontsize=12 label="Tầng Giám sát" labeljust=l pencolor="#AEB6BE" rankdir=LR shape=box style=rounded]
+		"7701160ffa0a49debb4b5693e7addbbd" [label="Metrics &
+Cảnh báo" height=2.3 image="E:\anacoda3\envs\python_3_10_16\lib\site-packages\resources/aws/management\cloudwatch.png" shape=none]
+		f363b0b8301a45a082a1ec5fff52e3b4 [label="Tập hợp
+Log" height=2.3 image="E:\anacoda3\envs\python_3_10_16\lib\site-packages\resources/aws/management\cloudwatch.png" shape=none]
+		"4171224bf4ed4a5994382e6298d508e5" [label="Theo dõi
+Phân tán" height=2.3 image="E:\anacoda3\envs\python_3_10_16\lib\site-packages\resources/k8s/compute\pod.png" shape=none]
+		"73e45b5b1f8348be967b68100c241e89" [label="Phân tích
+Thời gian thực" height=2.3 image="E:\anacoda3\envs\python_3_10_16\lib\site-packages\resources/aws/analytics\kinesis.png" shape=none]
+	}
+	"0d4c3867c28d4caeb892ed78d25d7314" -> "5d38bf8e93f54355b3777928c36d5448" [dir=forward fontcolor="#2D3436" fontname="Sans-Serif" fontsize=13]
+	def764f9c8074d2f8a7d3675d1549990 -> "5d38bf8e93f54355b3777928c36d5448" [dir=forward fontcolor="#2D3436" fontname="Sans-Serif" fontsize=13]
+	c620357017cc46b58b64b0256677563f -> "5d38bf8e93f54355b3777928c36d5448" [dir=forward fontcolor="#2D3436" fontname="Sans-Serif" fontsize=13]
+	"8a367316009e4fd5aba1d75e75755f62" -> "5d38bf8e93f54355b3777928c36d5448" [dir=forward fontcolor="#2D3436" fontname="Sans-Serif" fontsize=13]
+	subgraph "cluster_Tầng Fault Tolerance" {
+		graph [bgcolor="#E5F5FD" fontname="Sans-Serif" fontsize=12 label="Tầng Fault Tolerance" labeljust=l pencolor="#AEB6BE" rankdir=LR shape=box style=rounded]
+		"5d38bf8e93f54355b3777928c36d5448" [label="Kho
+Sao lưu" height=2.3 image="E:\anacoda3\envs\python_3_10_16\lib\site-packages\resources/aws/storage\simple-storage-service-s3.png" shape=none]
+		"8a367316009e4fd5aba1d75e75755f62" [label="Quản lý
+Phục hồi" height=2.3 image="E:\anacoda3\envs\python_3_10_16\lib\site-packages\resources/k8s/compute\pod.png" shape=none]
+	}
+	"7bf5bb9e9f644bb68d63007347304558" -> "4581c763f108461fbc61a4e1785fd2e0" [dir=forward fontcolor="#2D3436" fontname="Sans-Serif" fontsize=13]
+	"4581c763f108461fbc61a4e1785fd2e0" -> "00c5223b459241239a4fd8c1bcf95c8d" [dir=forward fontcolor="#2D3436" fontname="Sans-Serif" fontsize=13]
+	a97517d79e8e45cdafab27f19f812c37 -> d2fdd35d6d9b45e68739df9badbb4ecb [dir=forward fontcolor="#2D3436" fontname="Sans-Serif" fontsize=13]
+	"95fc13021d6545cf98715c37059f8f47" -> "21b138b4cfb047e2be4376dd56eb9241" [dir=forward fontcolor="#2D3436" fontname="Sans-Serif" fontsize=13]
+	f943ed44320f4d60b148834f082acb15 -> "790450ba5c04476fbfd41bd1c396fc69" [dir=forward fontcolor="#2D3436" fontname="Sans-Serif" fontsize=13]
+	ba1ac87f113d4440b129b78d7363de26 -> "790450ba5c04476fbfd41bd1c396fc69" [dir=forward fontcolor="#2D3436" fontname="Sans-Serif" fontsize=13]
+	ac5d2ae2cb084ad29b8e84294f1a56a4 -> "790450ba5c04476fbfd41bd1c396fc69" [dir=forward fontcolor="#2D3436" fontname="Sans-Serif" fontsize=13]
+	"790450ba5c04476fbfd41bd1c396fc69" -> de3a775029fa4078b09dcc8cae5d822d [dir=forward fontcolor="#2D3436" fontname="Sans-Serif" fontsize=13]
+	"790450ba5c04476fbfd41bd1c396fc69" -> ea59df701eb1496fa7b01cd93b6d4dfc [dir=forward fontcolor="#2D3436" fontname="Sans-Serif" fontsize=13]
+	"790450ba5c04476fbfd41bd1c396fc69" -> f61b36fa4d52431c81a494cb6d18ed8d [dir=forward fontcolor="#2D3436" fontname="Sans-Serif" fontsize=13]
+	"790450ba5c04476fbfd41bd1c396fc69" -> d503dfe298c9434fa347140b4777fb27 [dir=forward fontcolor="#2D3436" fontname="Sans-Serif" fontsize=13]
+	"790450ba5c04476fbfd41bd1c396fc69" -> f76f45f9b89f4d09b582036f2dd36045 [dir=forward fontcolor="#2D3436" fontname="Sans-Serif" fontsize=13]
+	"4f9f0c757f834152b0914e482d033d7e" -> d2fdd35d6d9b45e68739df9badbb4ecb [color="#00ACC1" dir=forward fontcolor="#2D3436" fontname="Sans-Serif" fontsize=13]
+	"7701160ffa0a49debb4b5693e7addbbd" -> d2fdd35d6d9b45e68739df9badbb4ecb [color="#FDD835" dir=forward fontcolor="#2D3436" fontname="Sans-Serif" fontsize=13]
+	"7701160ffa0a49debb4b5693e7addbbd" -> "21b138b4cfb047e2be4376dd56eb9241" [color="#FDD835" dir=forward fontcolor="#2D3436" fontname="Sans-Serif" fontsize=13]
+	"7701160ffa0a49debb4b5693e7addbbd" -> b6a2ce7155554260b468e0530eb797ce [color="#FDD835" dir=forward fontcolor="#2D3436" fontname="Sans-Serif" fontsize=13]
+	"7701160ffa0a49debb4b5693e7addbbd" -> "6fa33f3b54ee41829702cfe8cd99ba03" [color="#FDD835" dir=forward fontcolor="#2D3436" fontname="Sans-Serif" fontsize=13]
+}

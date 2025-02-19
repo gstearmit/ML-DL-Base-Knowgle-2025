@@ -11,7 +11,7 @@ from diagrams.aws.security import IAM
 from diagrams.aws.storage import S3
 from diagrams.aws.analytics import EMR
 
-with Diagram("Multil-LLM Processing System Architecture", show=False, direction="TB"):
+with Diagram("Multil-LLM Processing System Architecture", show=True, direction="TB"):
     # Client and API Gateway
     client = React("Client Application")
     api_gateway = APIGateway("API Gateway")
