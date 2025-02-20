@@ -67,16 +67,25 @@ services:
       - KC_DB_URL=jdbc:postgresql://postgres:5432/keycloak
       - KC_DB_USERNAME=${POSTGRES_USER}
       - KC_DB_PASSWORD=${POSTGRES_PASSWORD}
+      - KC_HOSTNAME=localhost
       - KC_HOSTNAME_STRICT=false
       - KC_HOSTNAME_STRICT_HTTPS=false
       - KC_HTTP_ENABLED=true
       - KC_HTTP_PORT=8180
-      - KC_PROXY_HEADERS=forwarded
       - KC_PROXY_ADDRESS_FORWARDING=true
       - KC_HEALTH_ENABLED=true
       - KC_LOG_LEVEL=INFO
       - KEYCLOAK_LOGLEVEL=INFO
-    command: start-dev --http-port=8180 --proxy-headers=forwarded
+      - KC_CACHE=local
+      - KC_CACHE_STACK=local
+    command: [
+      "start-dev",
+      "--http-port=8180",
+      "--http-relative-path=/auth",
+      "--proxy-headers=true",
+      "--hostname-strict=false",
+      "--hostname-strict-https=false"
+    ]
     ports:
       - "8180:8180"
     volumes:
@@ -90,7 +99,7 @@ services:
       postgres:
         condition: service_healthy
     healthcheck:
-      test: ["CMD", "curl", "-f", "http://localhost:8180/health/ready"]
+      test: ["CMD", "curl", "-f", "http://localhost:8180/auth/health/ready"]
       interval: 30s
       timeout: 10s
       retries: 3
@@ -153,9 +162,8 @@ services:
       KONG_ADMIN_GUI_LISTEN: 0.0.0.0:8002
       KONG_ADMIN_GUI_PATH: /
       KONG_ADMIN_GUI_AUTH: basic-auth
-      KONG_ADMIN_GUI_SESSION_CONF: '{"secret":"your-secret-key","storage":"kong","cookie_secure":false}'
-      KONG_ENFORCE_RBAC: "off"
       KONG_ADMIN_GUI_AUTH_CONF: '{"credential_names":["admin"],"header_names":["apikey"]}'
+      KONG_ENFORCE_RBAC: "off"
     depends_on:
       kong-migrations:
         condition: service_completed_successfully
@@ -396,6 +404,8 @@ services:
       - SPARK_MASTER_HOST=spark-master
       - SPARK_MASTER_PORT=7078
       - SPARK_MASTER_WEBUI_PORT=8184
+      - JAVA_HOME=/opt/java/openjdk
+      - SPARK_NO_DAEMONIZE=true
     ports:
       - "8184:8184"  # Web UI
       - "7078:7078"  # Spark master port
@@ -405,10 +415,12 @@ services:
     networks:
       - processing
     healthcheck:
-      test: nc -z localhost 7078 || exit 1
+      test: ["CMD", "curl", "-f", "http://localhost:8184"]
       interval: 30s
       timeout: 10s
       retries: 3
+      start_period: 60s
+    command: "/opt/spark/bin/spark-class org.apache.spark.deploy.master.Master"
     restart: unless-stopped
 
   spark-worker:
@@ -421,6 +433,10 @@ services:
       - SPARK_WORKER_MEMORY=1G
       - SPARK_WORKER_PORT=8182
       - SPARK_WORKER_WEBUI_PORT=8183
+      - JAVA_HOME=/opt/java/openjdk
+      - SPARK_NO_DAEMONIZE=true
+      - SPARK_WORKER_INSTANCES=1
+      - SPARK_WORKER_HOST=spark-worker
     ports:
       - "8182:8182"
       - "8183:8183"
@@ -430,7 +446,9 @@ services:
     networks:
       - processing
     depends_on:
-      - spark
+      spark:
+        condition: service_healthy
+    command: "/opt/spark/bin/spark-class org.apache.spark.deploy.worker.Worker spark://spark-master:7078"
     restart: unless-stopped
 
   # Layer 9: Monitoring Layer

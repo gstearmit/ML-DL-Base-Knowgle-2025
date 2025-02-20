@@ -255,6 +255,14 @@ docker volume rm workspace_postgres_data
 docker volume rm workspace_spark_data
 docker volume rm workspace_kong_data
 
+docker volume rm workspace_minio_data
+docker volume rm workspace_zookeeper_data
+docker volume rm workspace_zookeeper_log
+docker volume rm workspace_kafka_data
+docker volume rm workspace_grafana_data
+docker volume rm workspace_prometheus_data
+
+
 # Khởi động lại
 docker-compose up -d
 
@@ -280,6 +288,8 @@ curl http://localhost/api/llm/health
 curl http://localhost:8001/status  # Kong Admin API
 curl http://localhost:8002         # Kong Manager UI
 curl http://localhost/manager      # Kong Manager qua Nginx
+
+ truy cập Spark Web UI qua http://localhost:8184
 
 # 5. Kiểm tra services và routes
 curl http://localhost:8001/services | jq .
