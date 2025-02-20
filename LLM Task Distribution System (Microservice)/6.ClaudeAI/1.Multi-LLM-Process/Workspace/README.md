@@ -244,3 +244,16 @@ docker-compose logs -f
 ```
 
 Would you like me to provide additional details about any specific service configuration or help troubleshoot any remaining issues?
+
+
+# Dừng các container
+docker-compose down
+
+# Xóa volumes nếu cần
+docker volume prune -f
+
+# Khởi động lại
+docker-compose up -d
+
+# Kiểm tra logs
+docker-compose logs -f nginx keycloak
