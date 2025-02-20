@@ -1,0 +1,7 @@
+scrape_configs:
+- job_name: minio-job
+  bearer_token: eyJhbGciOiJIUzUxMiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJwcm9tZXRoZXVzIiwic3ViIjoiYWRtaW4iLCJleHAiOjQ4OTM2NjEyNzh9.4Po8IZy_JR3uhoKdSM34a9OgpPp9gG_Q6EtGzBuS7XcURY9K6vSyG3mpQ4DvUh6NS04dfCnTg0PMn7FIqK3A6Q
+  metrics_path: /minio/v2/metrics/cluster
+  scheme: http
+  static_configs:
+  - targets: ['localhost:9000']

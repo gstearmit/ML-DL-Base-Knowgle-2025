@@ -78,7 +78,13 @@ generate_config() {
 
     # Generate secure password if not provided
     MINIO_ROOT_USER=${MINIO_ROOT_USER:-admin}
-    MINIO_ROOT_PASSWORD=${MINIO_ROOT_PASSWORD:-$(openssl rand -base64 32)}
+    # MINIO_ROOT_PASSWORD=${MINIO_ROOT_PASSWORD:-$(openssl rand -base64 32)}
+    
+    MINIO_ROOT_PASSWORD=${MINIO_ROOT_PASSWORD:-secure_minio_password}
+
+    # Generate KMS master key if encryption is desired
+    # MINIO_KMS_MASTER_KEY=${MINIO_KMS_MASTER_KEY:-$(openssl rand -hex 32)}
+    MINIO_KMS_MASTER_KEY=${MINIO_KMS_MASTER_KEY:-secure_minio_password}
 
     cat > ./configs/minio/config.env << EOL
 MINIO_ROOT_USER=${MINIO_ROOT_USER}
@@ -90,11 +96,13 @@ MINIO_COMPRESSION=on
 MINIO_COMPRESSION_EXTENSIONS=.txt,.log,.csv,.json,.tar,.xml,.bin
 MINIO_COMPRESSION_MIME_TYPES=text/*,application/json,application/xml
 MINIO_DOMAIN=${MINIO_DOMAIN:-localhost}
+MINIO_KMS_MASTER_KEY=${MINIO_KMS_MASTER_KEY}
 EOL
 
     # Export credentials for mc client
     export MINIO_ROOT_USER
     export MINIO_ROOT_PASSWORD
+    export MINIO_KMS_MASTER_KEY
 }
 
 # Create necessary buckets and policies
@@ -123,7 +131,11 @@ initialize_buckets() {
     for bucket in "llm-data" "model-cache" "user-data" "system-backup"; do
         mc mb "local/${bucket}" --ignore-existing
         mc version enable "local/${bucket}"
-        mc encrypt set sse-s3 "local/${bucket}"
+        
+        # Only enable encryption if KMS is configured
+        if [ ! -z "${MINIO_KMS_MASTER_KEY}" ]; then
+            mc encrypt set sse-s3 "local/${bucket}" || log "Warning: Encryption not enabled for ${bucket}"
+        fi
     done
 }
 
@@ -174,8 +186,8 @@ EOL
 EOL
 
     # Apply policies
-    mc admin policy create local readonly-policy ./configs/minio/readonly-policy.json
-    mc admin policy create local readwrite-policy ./configs/minio/readwrite-policy.json
+    mc admin policy create local readonly-policy ./configs/minio/readonly-policy.json || log "Warning: Failed to create readonly policy"
+    mc admin policy create local readwrite-policy ./configs/minio/readwrite-policy.json || log "Warning: Failed to create readwrite policy"
 }
 
 # Configure backup settings
@@ -202,11 +214,11 @@ setup_monitoring() {
     mkdir -p ./configs/prometheus
     
     # Configure Prometheus endpoints
-    mc admin prometheus generate local > ./configs/prometheus/minio-metrics.yml
+    mc admin prometheus generate local > ./configs/prometheus/minio-metrics.yml || log "Warning: Failed to generate Prometheus metrics"
     
     # Configure audit logging if token is provided
     if [ ! -z "${ELASTIC_TOKEN}" ]; then
-        mc admin config set local audit endpoint=http://elasticsearch:9200 auth_token=${ELASTIC_TOKEN}
+        mc admin config set local audit endpoint=http://elasticsearch:9200 auth_token=${ELASTIC_TOKEN} || log "Warning: Failed to configure audit logging"
     fi
 }
 
