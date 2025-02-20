@@ -335,3 +335,7 @@ Lưu ý:
 - Thay `your-secret-key` bằng một chuỗi ngẫu nhiên phức tạp
 - Trong môi trường production, nên bật `cookie_secure: true`
 - Có thể thay đổi username/password theo ý muốn khi tạo basic-auth credentials
+
+
+## Restart nginx:
+docker-compose restart nginx
