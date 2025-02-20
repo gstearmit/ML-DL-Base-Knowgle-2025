@@ -8,7 +8,8 @@ RUN apt-get update && \
     rm -rf /var/lib/apt/lists/*
 
 # Copy các file cần thiết
-COPY . .
+COPY validator.jar .
+COPY application.properties .
 
 # Kiểm tra sự tồn tại của file JAR
 RUN test -f validator.jar || echo "validator.jar not found!"

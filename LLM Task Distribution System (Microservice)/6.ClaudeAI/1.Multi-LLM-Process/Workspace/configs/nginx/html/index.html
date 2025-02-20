@@ -1,0 +1,96 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>API Gateway</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            line-height: 1.6;
+            margin: 0;
+            padding: 20px;
+            background: #f5f5f5;
+        }
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            background: white;
+            padding: 20px;
+            border-radius: 5px;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+        }
+        h1 {
+            color: #333;
+            border-bottom: 2px solid #eee;
+            padding-bottom: 10px;
+        }
+        .endpoints {
+            margin: 20px 0;
+        }
+        .endpoint {
+            background: #f8f9fa;
+            padding: 15px;
+            margin: 10px 0;
+            border-radius: 4px;
+            border-left: 4px solid #007bff;
+        }
+        .endpoint h3 {
+            margin: 0 0 10px 0;
+            color: #007bff;
+        }
+        .endpoint p {
+            margin: 5px 0;
+            color: #666;
+        }
+        .status {
+            margin-top: 20px;
+            padding: 15px;
+            background: #e9ecef;
+            border-radius: 4px;
+        }
+        .status.healthy {
+            border-left: 4px solid #28a745;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>API Gateway Services</h1>
+        
+        <div class="endpoints">
+            <div class="endpoint">
+                <h3>Validator API</h3>
+                <p>Base URL: <code>/api/validator</code></p>
+                <p>Health Check: <code>/api/validator/health</code></p>
+            </div>
+
+            <div class="endpoint">
+                <h3>Task Manager API</h3>
+                <p>Base URL: <code>/api/tasks</code></p>
+                <p>Health Check: <code>/api/tasks/health</code></p>
+            </div>
+
+            <div class="endpoint">
+                <h3>LLM Engine API</h3>
+                <p>Base URL: <code>/api/llm</code></p>
+                <p>Health Check: <code>/api/llm/health</code></p>
+            </div>
+
+            <div class="endpoint">
+                <h3>Authentication</h3>
+                <p>Keycloak URL: <code>/auth</code></p>
+            </div>
+
+            <div class="endpoint">
+                <h3>Kong Manager</h3>
+                <p>Admin UI: <code>/manager</code></p>
+                <p>Quản lý và giám sát Kong Gateway</p>
+            </div>
+        </div>
+
+        <div class="status healthy">
+            <h3>System Status</h3>
+            <p>Gateway Health Check: <code>/health</code></p>
+        </div>
+    </div>
+</body>
+</html> 

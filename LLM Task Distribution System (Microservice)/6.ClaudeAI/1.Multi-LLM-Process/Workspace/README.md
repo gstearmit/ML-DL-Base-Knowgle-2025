@@ -253,6 +253,7 @@ docker-compose down
 docker volume prune -f
 docker volume rm workspace_postgres_data
 docker volume rm workspace_spark_data
+docker volume rm workspace_kong_data
 
 # Khởi động lại
 docker-compose up -d
@@ -260,8 +261,7 @@ docker-compose up -d
 # Kiểm tra logs
 docker-compose logs -f nginx keycloak
 docker-compose logs -f init-keycloak-db
-docker-compose logs -f validator spark spark-worker
-docker-compose logs -f task-manager
+docker-compose logs -f validator spark spark-worker  task-manager
 
 ### TRUY CẬP Bạn có thể truy cập:
 Keycloak Admin Console: http://localhost:8180
@@ -275,3 +275,63 @@ curl http://localhost:8001/routes
 curl http://localhost/api/validator/health
 curl http://localhost/api/tasks/health
 curl http://localhost/api/llm/health
+
+# 4. Kiểm tra các endpoints
+curl http://localhost:8001/status  # Kong Admin API
+curl http://localhost:8002         # Kong Manager UI
+curl http://localhost/manager      # Kong Manager qua Nginx
+
+# 5. Kiểm tra services và routes
+curl http://localhost:8001/services | jq .
+curl http://localhost:8001/routes | jq .
+
+
+Tôi sẽ hướng dẫn bạn cấu hình xác thực basic auth cho Kong Manager UI bằng username và password. Đây là cách cấu hình:
+
+```yaml:docker-compose.yml
+// ... existing code ...
+  kong:
+    environment:
+      // ... existing environment variables ...
+      KONG_ADMIN_GUI_URL: http://localhost:8002
+      KONG_ADMIN_GUI_LISTEN: 0.0.0.0:8002
+      KONG_ADMIN_GUI_PATH: /
+      # Thêm các biến môi trường xác thực
+      KONG_ADMIN_GUI_AUTH: basic-auth
+      KONG_ADMIN_GUI_SESSION_CONF: '{"secret":"your-secret-key","storage":"kong","cookie_secure":false}'
+      KONG_ENFORCE_RBAC: "off"
+      KONG_ADMIN_GUI_AUTH_CONF: '{"credential_names":["admin"],"header_names":["apikey"]}'
+// ... existing code ...
+```
+
+Sau khi thay đổi cấu hình, bạn cần tạo user admin thông qua Kong Admin API. Thực hiện các bước sau:
+
+1. Khởi động lại các container:
+```bash
+docker-compose down
+docker-compose up -d
+```
+
+2. Tạo consumer "admin":
+```bash
+curl -i -X POST http://localhost:8001/consumers \
+  --data username=admin
+```
+
+3. Tạo basic-auth credentials cho consumer admin:
+```bash
+curl -i -X POST http://localhost:8001/consumers/admin/basic-auth \
+  --data username=admin \
+  --data password=admin
+```
+
+Sau khi hoàn tất:
+1. Truy cập http://localhost:8002
+2. Đăng nhập với:
+   - Username: admin
+   - Password: admin
+
+Lưu ý:
+- Thay `your-secret-key` bằng một chuỗi ngẫu nhiên phức tạp
+- Trong môi trường production, nên bật `cookie_secure: true`
+- Có thể thay đổi username/password theo ý muốn khi tạo basic-auth credentials
