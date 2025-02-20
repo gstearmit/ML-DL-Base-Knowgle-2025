@@ -349,3 +349,35 @@ Lưu ý:
 
 ## Restart nginx:
 docker-compose restart nginx
+
+
+
+
+
+# container Keycloak 
+
+1. Dừng và xóa container Keycloak:
+```bash
+docker-compose rm -f init-keycloak-db keycloak
+docker volume rm workspace_keycloak_data
+```
+
+
+2. Khởi động lại:
+```bash
+docker-compose up -d keycloak
+```
+
+
+
+3. Kiểm tra log:
+```bash
+docker-compose logs -f keycloak
+```
+
+
+
+Lưu ý:
+- Đảm bảo database Keycloak đã được tạo
+- Kiểm tra biến môi trường trong file .env
+- Theo dõi log để phát hiện lỗi chi tiết
