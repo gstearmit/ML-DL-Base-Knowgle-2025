@@ -39,7 +39,7 @@ echo "Starting health checks..."
 # Core Infrastructure
 check_service "Nginx" 80
 check_service "Kong" 8000
-check_service "Keycloak" 8080
+check_service "Keycloak" 8180
 check_service "PostgreSQL" 5432
 check_service "Redis" 6379
 check_service "RabbitMQ" 5672

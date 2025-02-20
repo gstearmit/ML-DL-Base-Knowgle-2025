@@ -60,18 +60,23 @@ services:
   keycloak:
     image: quay.io/keycloak/keycloak:latest
     container_name: keycloak
-    command: start-dev
     environment:
-      - KEYCLOAK_ADMIN=admin
-      - KEYCLOAK_ADMIN_PASSWORD=${KEYCLOAK_ADMIN_PASSWORD}
+      - KC_BOOTSTRAP_ADMIN_USERNAME=admin
+      - KC_BOOTSTRAP_ADMIN_PASSWORD=${KEYCLOAK_ADMIN_PASSWORD}
       - KC_DB=postgres
       - KC_DB_URL=jdbc:postgresql://postgres:5432/keycloak
       - KC_DB_USERNAME=${POSTGRES_USER}
       - KC_DB_PASSWORD=${POSTGRES_PASSWORD}
-      - KC_HOSTNAME=localhost
+      - KC_HOSTNAME_STRICT=false
+      - KC_HOSTNAME_STRICT_HTTPS=false
+      - KC_HTTP_ENABLED=true
       - KC_HTTP_PORT=8180
-      - KC_PROXY=edge
+      - KC_PROXY_HEADERS=forwarded
+      - KC_PROXY_ADDRESS_FORWARDING=true
       - KC_HEALTH_ENABLED=true
+      - KC_LOG_LEVEL=INFO
+      - KEYCLOAK_LOGLEVEL=INFO
+    command: start-dev --http-port=8180 --proxy-headers=forwarded
     ports:
       - "8180:8180"
     volumes:
@@ -389,18 +394,18 @@ services:
       - SPARK_LOCAL_STORAGE_ENCRYPTION_ENABLED=no
       - SPARK_SSL_ENABLED=no
       - SPARK_MASTER_HOST=spark-master
-      - SPARK_MASTER_PORT=7077
-      - SPARK_MASTER_WEBUI_PORT=8181
+      - SPARK_MASTER_PORT=7078
+      - SPARK_MASTER_WEBUI_PORT=8184
     ports:
-      - "8181:8181"  # Web UI
-      - "7077:7077"  # Spark master port
+      - "8184:8184"  # Web UI
+      - "7078:7078"  # Spark master port
     volumes:
       - ./spark/conf:/opt/spark/conf
       - ./spark/data:/opt/spark/data
     networks:
       - processing
     healthcheck:
-      test: nc -z localhost 7077 || exit 1
+      test: nc -z localhost 7078 || exit 1
       interval: 30s
       timeout: 10s
       retries: 3
@@ -411,7 +416,7 @@ services:
     container_name: spark-worker
     environment:
       - SPARK_MODE=worker
-      - SPARK_MASTER_URL=spark://spark-master:7077
+      - SPARK_MASTER_URL=spark://spark-master:7078
       - SPARK_WORKER_CORES=1
       - SPARK_WORKER_MEMORY=1G
       - SPARK_WORKER_PORT=8182
@@ -456,15 +461,22 @@ services:
       - "9001:9001"
     volumes:
       - minio_data:/data
+      - ./configs/minio/config.env:/etc/minio/config.env:ro
     environment:
       - MINIO_ROOT_USER=${MINIO_ROOT_USER}
       - MINIO_ROOT_PASSWORD=${MINIO_ROOT_PASSWORD}
     command: server /data --console-address ":9001"
     networks:
       - storage
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:9000/minio/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+    restart: unless-stopped
 
   init-kong:
-    image: curlimages/curl
+    image: alpine:latest
     depends_on:
       kong:
         condition: service_healthy
@@ -472,9 +484,89 @@ services:
       VALIDATOR_URL: ${VALIDATOR_URL:-http://validator:8080}
       TASK_MANAGER_URL: ${TASK_MANAGER_URL:-http://task-manager:8084}
       LLM_ENGINE_URL: ${LLM_ENGINE_URL:-http://llm-engine:5000}
-    command: |
-      /bin/sh -c '
-      set -e
+    command: >
+      sh -c '
+        apk add --no-cache curl jq;
+        echo "Starting Kong configuration...";
+        
+        # Initialize variables
+        $$routes_data="";
+        $$route_id="";
+        $$services_data="";
+        $$service_id="";
+        $$service_name="";
+        $$service_url="";
+        $$route_path="";
+        $$service_response="";
+        $$route_response="";
+
+        # Delete routes function
+        delete_routes() {
+          echo "Deleting existing routes...";
+          $$routes_data=$(curl -s http://kong:8001/routes | jq -r ".data[].id" || echo "");
+          if [ -n "$$routes_data" ]; then
+            echo "$$routes_data" | while IFS= read -r $$route_id; do
+              [ -n "$$route_id" ] && curl -s -X DELETE "http://kong:8001/routes/$$route_id";
+            done;
+          fi;
+        }
+
+        # Delete services function
+        delete_services() {
+          echo "Deleting existing services...";
+          $$services_data=$(curl -s http://kong:8001/services | jq -r ".data[].id" || echo "");
+          if [ -n "$$services_data" ]; then
+            echo "$$services_data" | while IFS= read -r $$service_id; do
+              [ -n "$$service_id" ] && curl -s -X DELETE "http://kong:8001/services/$$service_id";
+            done;
+          fi;
+        }
+
+        # Create service and route function
+        create_service_route() {
+          $$service_name="$1";
+          $$service_url="$2";
+          $$route_path="$3";
+
+          if [ -z "$$service_name" ] || [ -z "$$service_url" ] || [ -z "$$route_path" ]; then
+            echo "Error: Missing required parameters";
+            return 1;
+          fi;
+
+          echo "Creating service: $$service_name";
+          $$service_response=$(curl -s -X POST http://kong:8001/services \
+            -H "Content-Type: application/x-www-form-urlencoded" \
+            -d "name=$$service_name" \
+            -d "url=$$service_url");
+          echo "$$service_response" | jq .;
+
+          echo "Creating route for service: $$service_name";
+          $$route_response=$(curl -s -X POST "http://kong:8001/services/$$service_name/routes" \
+            -H "Content-Type: application/x-www-form-urlencoded" \
+            -d "name=$$service_name-route" \
+            -d "paths[]=$$route_path" \
+            -d "strip_path=true" \
+            -d "preserve_host=false" \
+            -d "methods[]=GET" \
+            -d "methods[]=POST" \
+            -d "methods[]=PUT" \
+            -d "methods[]=DELETE");
+          echo "$$route_response" | jq .;
+        }
+
+        # Main execution
+        delete_routes;
+        delete_services;
+        
+        [ -n "$$VALIDATOR_URL" ] && create_service_route "validator" "$$VALIDATOR_URL" "/api/validator";
+        [ -n "$$TASK_MANAGER_URL" ] && create_service_route "task-manager" "$$TASK_MANAGER_URL" "/api/tasks";
+        [ -n "$$LLM_ENGINE_URL" ] && create_service_route "llm-engine" "$$LLM_ENGINE_URL" "/api/llm";
+        
+        echo "Checking configuration...";
+        echo "Services:"; curl -s http://kong:8001/services | jq .;
+        echo "Routes:"; curl -s http://kong:8001/routes | jq .;
+        
+        echo "Kong configuration completed!";
       '
     networks:
       - security

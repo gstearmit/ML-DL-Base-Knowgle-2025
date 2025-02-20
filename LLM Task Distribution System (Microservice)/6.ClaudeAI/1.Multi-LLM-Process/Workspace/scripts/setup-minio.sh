@@ -5,9 +5,6 @@
 
 set -e
 
-# Load environment variables
-source .env
-
 # Color codes for output
 RED='\033[0;31m'
 GREEN='\033[0;32m'
@@ -27,6 +24,20 @@ error_handler() {
 
 trap error_handler ERR
 
+# Install MinIO Client
+install_mc() {
+    log "Installing MinIO Client..."
+    curl -O https://dl.min.io/client/mc/release/linux-amd64/mc
+    chmod +x mc
+    sudo mv mc /usr/local/bin/
+    
+    # Verify installation
+    if ! mc --version; then
+        echo -e "${RED}Failed to install MinIO Client${NC}"
+        exit 1
+    fi
+}
+
 # Check if Docker is running
 check_docker() {
     log "Checking Docker status..."
@@ -36,10 +47,26 @@ check_docker() {
     fi
 }
 
+# Check for required commands
+check_requirements() {
+    log "Checking required commands..."
+    for cmd in docker curl openssl; do
+        if ! command -v $cmd >/dev/null 2>&1; then
+            echo -e "${RED}Error: Required command '$cmd' is not installed.${NC}"
+            exit 1
+        fi
+    done
+
+    # Check for MinIO Client and install if missing
+    if ! command -v mc >/dev/null 2>&1; then
+        install_mc
+    fi
+}
+
 # Create necessary directories
 setup_directories() {
     log "Creating MinIO directories..."
-    mkdir -p ./data/minio/{data,config}
+    mkdir -p ./data/minio/data ./data/minio/config ./configs/minio
     chmod 700 ./data/minio/data
     chmod 700 ./data/minio/config
 }
@@ -47,9 +74,15 @@ setup_directories() {
 # Generate MinIO configuration
 generate_config() {
     log "Generating MinIO configuration..."
+    mkdir -p ./configs/minio
+
+    # Generate secure password if not provided
+    MINIO_ROOT_USER=${MINIO_ROOT_USER:-admin}
+    MINIO_ROOT_PASSWORD=${MINIO_ROOT_PASSWORD:-$(openssl rand -base64 32)}
+
     cat > ./configs/minio/config.env << EOL
-MINIO_ROOT_USER=${MINIO_ROOT_USER:-admin}
-MINIO_ROOT_PASSWORD=${MINIO_ROOT_PASSWORD:-$(openssl rand -base64 32)}
+MINIO_ROOT_USER=${MINIO_ROOT_USER}
+MINIO_ROOT_PASSWORD=${MINIO_ROOT_PASSWORD}
 MINIO_REGION=${MINIO_REGION:-us-east-1}
 MINIO_BROWSER=${MINIO_BROWSER:-on}
 MINIO_PROMETHEUS_AUTH_TYPE=public
@@ -58,6 +91,10 @@ MINIO_COMPRESSION_EXTENSIONS=.txt,.log,.csv,.json,.tar,.xml,.bin
 MINIO_COMPRESSION_MIME_TYPES=text/*,application/json,application/xml
 MINIO_DOMAIN=${MINIO_DOMAIN:-localhost}
 EOL
+
+    # Export credentials for mc client
+    export MINIO_ROOT_USER
+    export MINIO_ROOT_PASSWORD
 }
 
 # Create necessary buckets and policies
@@ -70,8 +107,17 @@ initialize_buckets() {
         sleep 1
     done
     
+    # Remove existing alias if present
+    mc alias remove local >/dev/null 2>&1 || true
+    
     # Create required buckets
     mc alias set local http://localhost:9000 "${MINIO_ROOT_USER}" "${MINIO_ROOT_PASSWORD}"
+    
+    # Verify connection
+    mc admin info local || {
+        echo -e "${RED}Failed to authenticate with MinIO server${NC}"
+        exit 1
+    }
     
     # Create buckets with versioning enabled
     for bucket in "llm-data" "model-cache" "user-data" "system-backup"; do
@@ -136,7 +182,6 @@ EOL
 setup_backups() {
     log "Configuring MinIO backup settings..."
     
-    # Create backup schedule
     cat > ./configs/minio/backup-config.json << EOL
 {
     "backup": {
@@ -154,17 +199,22 @@ EOL
 setup_monitoring() {
     log "Setting up MinIO monitoring..."
     
+    mkdir -p ./configs/prometheus
+    
     # Configure Prometheus endpoints
     mc admin prometheus generate local > ./configs/prometheus/minio-metrics.yml
     
-    # Configure audit logging
-    mc admin config set local audit endpoint=http://elasticsearch:9200 auth_token=${ELASTIC_TOKEN}
+    # Configure audit logging if token is provided
+    if [ ! -z "${ELASTIC_TOKEN}" ]; then
+        mc admin config set local audit endpoint=http://elasticsearch:9200 auth_token=${ELASTIC_TOKEN}
+    fi
 }
 
 # Main execution
 main() {
     log "Starting MinIO setup..."
     
+    check_requirements
     check_docker
     setup_directories
     generate_config
