@@ -7,6 +7,7 @@ services:
       - ./configs/nginx/nginx.conf:/etc/nginx/nginx.conf:ro
       - ./configs/nginx/conf.d:/etc/nginx/conf.d:ro
       - ./configs/nginx/ssl:/etc/nginx/ssl:ro
+      - ./configs/nginx/html:/usr/share/nginx/html:ro
     ports:
       - "80:80"
       - "443:443"
@@ -16,12 +17,23 @@ services:
     depends_on:
       kong:
         condition: service_healthy
-    command: sh -c "sleep 30 && nginx-debug -g 'daemon off;'"
+      init-kong:
+        condition: service_completed_successfully
+      keycloak:
+        condition: service_healthy
+    command: >
+      /bin/sh -c '
+      echo "Waiting for dependencies..." &&
+      sleep 30 &&
+      echo "Starting Nginx..." &&
+      nginx-debug -g "daemon off;"
+      '
     healthcheck:
-      test: ["CMD", "nginx", "-t"]
+      test: ["CMD", "wget", "-q", "--spider", "http://localhost/health"]
       interval: 10s
       timeout: 5s
       retries: 3
+      start_period: 30s
     restart: unless-stopped
 
   # Layer 2: Security Layer
@@ -152,27 +164,94 @@ services:
 
   # Layer 3: Data Processing Layer
   validator:
-    image: openjdk:17-slim
-    volumes:
-      - ./validator:/app
-    command: ["java", "-jar", "/app/validator.jar"]
+    build:
+      context: ./validator
+      dockerfile: Dockerfile
+    container_name: validator
+    environment:
+      - SPRING_PROFILES_ACTIVE=prod
+      - SPRING_DATASOURCE_URL=jdbc:postgresql://postgres:5432/validatordb
+      - SPRING_DATASOURCE_USERNAME=${POSTGRES_USER}
+      - SPRING_DATASOURCE_PASSWORD=${POSTGRES_PASSWORD}
+      - SPRING_JPA_HIBERNATE_DDL_AUTO=update
+      - JAVA_OPTS=-Xmx512m -Xms256m
+      - SERVER_PORT=8080
+    ports:
+      - "8080:8080"
     networks:
       - processing
+      - database
+    depends_on:
+      init-validatordb:
+        condition: service_completed_successfully
+      postgres:
+        condition: service_healthy
+    restart: unless-stopped
+
+  init-validatordb:
+    image: postgres:15-alpine
+    environment:
+      PGPASSWORD: ${POSTGRES_PASSWORD}
+      POSTGRES_USER: ${POSTGRES_USER}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+      POSTGRES_DB: postgres
+    networks:
+      - database
+    depends_on:
+      postgres:
+        condition: service_healthy
+    command: >
+      /bin/sh -c '
+      echo "Creating validatordb database..." &&
+      psql -v ON_ERROR_STOP=1 --username "${POSTGRES_USER}" --host postgres --dbname postgres --command "CREATE DATABASE validatordb WITH OWNER ${POSTGRES_USER};" &&
+      echo "Granting privileges..." &&
+      psql -v ON_ERROR_STOP=1 --username "${POSTGRES_USER}" --host postgres --dbname postgres --command "GRANT ALL PRIVILEGES ON DATABASE validatordb TO ${POSTGRES_USER};"
+      '
+    restart: on-failure
 
   # Layer 4: Task Orchestration Layer
   task-manager:
     image: openjdk:17-slim
+    container_name: task-manager
+    working_dir: /app
     volumes:
       - ./task-manager:/app
+    command: >
+      sh -c '
+        echo "Waiting for dependencies..." &&
+        sleep 15 &&
+        java -jar task-manager.jar
+      '
     environment:
       - SPRING_PROFILES_ACTIVE=prod
       - SPRING_DATASOURCE_URL=jdbc:postgresql://postgres:5432/taskdb
+      - SPRING_DATASOURCE_USERNAME=${POSTGRES_USER}
+      - SPRING_DATASOURCE_PASSWORD=${POSTGRES_PASSWORD}
+      - SPRING_JPA_HIBERNATE_DDL_AUTO=update
+      - REDIS_HOST=redis
+      - REDIS_PORT=6379
+      - KAFKA_BOOTSTRAP_SERVERS=kafka:9092
+      - SERVER_PORT=8084
+    ports:
+      - "8084:8084"
     networks:
       - orchestration
       - database
+      - cache
+      - queue
     depends_on:
-      - postgres
-      - redis
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_started
+      kafka:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8084/actuator/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+    restart: unless-stopped
 
   # Layer 5: Queue Management Layer
   zookeeper:
@@ -296,13 +375,52 @@ services:
   # Layer 8: Result Processing Layer
   spark:
     image: apache/spark:latest
+    container_name: spark-master
     environment:
       - SPARK_MODE=master
+      - SPARK_RPC_AUTHENTICATION_ENABLED=no
+      - SPARK_RPC_ENCRYPTION_ENABLED=no
+      - SPARK_LOCAL_STORAGE_ENCRYPTION_ENABLED=no
+      - SPARK_SSL_ENABLED=no
+      - SPARK_MASTER_HOST=spark-master
+      - SPARK_MASTER_PORT=7077
+      - SPARK_MASTER_WEBUI_PORT=8181
     ports:
-      - "8181:8080"
-      - "7077:7077"
+      - "8181:8181"  # Web UI
+      - "7077:7077"  # Spark master port
+    volumes:
+      - ./spark/conf:/opt/spark/conf
+      - ./spark/data:/opt/spark/data
     networks:
       - processing
+    healthcheck:
+      test: nc -z localhost 7077 || exit 1
+      interval: 30s
+      timeout: 10s
+      retries: 3
+    restart: unless-stopped
+
+  spark-worker:
+    image: apache/spark:latest
+    container_name: spark-worker
+    environment:
+      - SPARK_MODE=worker
+      - SPARK_MASTER_URL=spark://spark-master:7077
+      - SPARK_WORKER_CORES=1
+      - SPARK_WORKER_MEMORY=1G
+      - SPARK_WORKER_PORT=8182
+      - SPARK_WORKER_WEBUI_PORT=8183
+    ports:
+      - "8182:8182"
+      - "8183:8183"
+    volumes:
+      - ./spark/conf:/opt/spark/conf
+      - ./spark/data:/opt/spark/data
+    networks:
+      - processing
+    depends_on:
+      - spark
+    restart: unless-stopped
 
   # Layer 9: Monitoring Layer
   prometheus:
@@ -338,6 +456,58 @@ services:
     command: server /data --console-address ":9001"
     networks:
       - storage
+
+  init-kong:
+    image: curlimages/curl
+    depends_on:
+      kong:
+        condition: service_healthy
+    command: >
+      /bin/sh -c '
+      echo "Waiting for Kong to start..." &&
+      sleep 10 &&
+
+      echo "Creating validator service..." &&
+      curl -s -X POST http://kong:8001/services \
+        -H "Content-Type: application/x-www-form-urlencoded" \
+        -d "name=validator" \
+        -d "url=http://validator:8080" &&
+
+      echo "Creating validator route..." &&
+      curl -s -X POST http://kong:8001/services/validator/routes \
+        -H "Content-Type: application/x-www-form-urlencoded" \
+        -d "paths[]=/api/validator" \
+        -d "strip_path=true" &&
+
+      echo "Creating task-manager service..." &&
+      curl -s -X POST http://kong:8001/services \
+        -H "Content-Type: application/x-www-form-urlencoded" \
+        -d "name=task-manager" \
+        -d "url=http://task-manager:8084" &&
+
+      echo "Creating task-manager route..." &&
+      curl -s -X POST http://kong:8001/services/task-manager/routes \
+        -H "Content-Type: application/x-www-form-urlencoded" \
+        -d "paths[]=/api/tasks" \
+        -d "strip_path=true" &&
+
+      echo "Creating llm-engine service..." &&
+      curl -s -X POST http://kong:8001/services \
+        -H "Content-Type: application/x-www-form-urlencoded" \
+        -d "name=llm-engine" \
+        -d "url=http://llm-engine:5000" &&
+
+      echo "Creating llm-engine route..." &&
+      curl -s -X POST http://kong:8001/services/llm-engine/routes \
+        -H "Content-Type: application/x-www-form-urlencoded" \
+        -d "paths[]=/api/llm" \
+        -d "strip_path=true" &&
+
+      echo "Kong configuration completed!"
+      '
+    networks:
+      - security
+    restart: on-failure
 
 networks:
   frontend:

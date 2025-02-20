@@ -251,9 +251,27 @@ docker-compose down
 
 # Xóa volumes nếu cần
 docker volume prune -f
+docker volume rm workspace_postgres_data
+docker volume rm workspace_spark_data
 
 # Khởi động lại
 docker-compose up -d
 
 # Kiểm tra logs
 docker-compose logs -f nginx keycloak
+docker-compose logs -f init-keycloak-db
+docker-compose logs -f validator spark spark-worker
+docker-compose logs -f task-manager
+
+### TRUY CẬP Bạn có thể truy cập:
+Keycloak Admin Console: http://localhost:8180
+API Gateway thông qua Nginx: http://localhost:80
+
+## Kiểm tra các router :
+# Kiểm tra Kong routes
+curl http://localhost:8001/routes
+
+# Test API endpoints
+curl http://localhost/api/validator/health
+curl http://localhost/api/tasks/health
+curl http://localhost/api/llm/health
