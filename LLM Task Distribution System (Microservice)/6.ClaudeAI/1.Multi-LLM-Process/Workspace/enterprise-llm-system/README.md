@@ -69,3 +69,11 @@ chmod +x scripts/*.sh
 ```bash
 sudo ./scripts/start-system.sh
 ``` 
+
+```bash
+docker-compose --env-file configs/env/.env up --build 
+
+docker-compose --env-file configs/env/.env up -d api-gateway
+```
+
+docker-compose exec api-gateway kong reload

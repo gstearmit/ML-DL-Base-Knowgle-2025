@@ -34,6 +34,15 @@ docker volume prune -f
 echo "Starting services..."
 docker-compose --env-file configs/env/.env up -d
 
+## need build
+# docker-compose --env-file configs/env/.env up --build 
+
+# docker builder prune
+# docker-compose --env-file configs/env/.env up --build 
+# docker-compose --env-file configs/env/.env up -d api-gateway
+# docker-compose exec api-gateway kong reload
+
+
 # Wait for services to be ready
 echo "Waiting for services to start..."
 sleep 30

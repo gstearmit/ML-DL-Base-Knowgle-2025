@@ -37,3 +37,14 @@ sleep 30
 # Khởi tạo Keycloak
 ./scripts/init-keycloak.sh
 ````
+## Build with param:
+```bash
+docker-compose --env-file configs/env/.env up --build 
+
+docker-compose up -d keycloak
+
+
+## Xóa cache Docker: 
+docker builder prune
+
+```
