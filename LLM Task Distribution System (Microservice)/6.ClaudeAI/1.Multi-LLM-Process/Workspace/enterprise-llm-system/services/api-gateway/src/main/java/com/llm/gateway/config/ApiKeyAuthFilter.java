@@ -10,8 +10,8 @@ import java.io.IOException;
 
 public class ApiKeyAuthFilter extends WebAuthenticationFilter {
 
-    private static final String API_KEY_HEADER = "X-API-KEY";
-    private static final String API_KEY_VALUE = "your_actual_api_key"; // Thay thế bằng API key thực tế của bạn
+    private static final String API_KEY_HEADER = "x-api-key";
+    private static final String API_KEY_VALUE = "enterprise_llm_actual_api_key"; // Thay thế bằng API key thực tế của bạn
 
     @Override
     protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain chain)

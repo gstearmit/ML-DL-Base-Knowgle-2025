@@ -32,16 +32,7 @@ docker volume prune -f
 
 # Build and start services
 echo "Starting services..."
-docker-compose --env-file configs/env/.env up -d
-
-## need build
-# docker-compose --env-file configs/env/.env up --build 
-
-# docker builder prune
-# docker-compose --env-file configs/env/.env up --build 
-# docker-compose --env-file configs/env/.env up -d api-gateway
-# docker-compose exec api-gateway kong reload
-
+docker-compose --env-file configs/env/.env up --build -d
 
 # Wait for services to be ready
 echo "Waiting for services to start..."
@@ -51,4 +42,8 @@ sleep 30
 echo "Initializing Keycloak..."
 ./scripts/init-keycloak.sh
 
-echo "System startup completed!" 
+# Reload Kong configuration
+# echo "Reloading Kong configuration..."
+# docker-compose exec api-gateway kong reload
+
+echo "System startup completed!"

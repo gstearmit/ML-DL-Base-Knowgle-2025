@@ -1,5 +1,9 @@
 # Enterprise LLM System
 
+http://localhost:8180/realms/llm-system
+
+http://localhost:8180/realms/llm-system/protocol/openid-connect/certs
+
 ## Prerequisites
 
 - Docker and Docker Compose
