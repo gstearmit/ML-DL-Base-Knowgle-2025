@@ -29,10 +29,17 @@ docker-compose down -v
 # Remove existing volumes
 echo "Cleaning up volumes..."
 docker volume prune -f
+docker volume rm enterprise-llm-system_postgres_data
 
 # Build and start services
 echo "Starting services..."
 docker-compose --env-file configs/env/.env up --build -d
+
+# docker builder prune
+# docker-compose --env-file configs/env/.env up --build 
+# docker-compose --env-file configs/env/.env up -d api-gateway
+# docker-compose exec api-gateway kong reload
+
 
 # Wait for services to be ready
 echo "Waiting for services to start..."
@@ -40,10 +47,20 @@ sleep 30
 
 # Initialize Keycloak
 echo "Initializing Keycloak..."
+chmod +x ./scripts/init-keycloak.sh
 ./scripts/init-keycloak.sh
 
-# Reload Kong configuration
-# echo "Reloading Kong configuration..."
-# docker-compose exec api-gateway kong reload
+# Wait for services to be ready
+echo "Waiting for services to start..."
+sleep 30
+
+# Initialize multiple PostgreSQL databases
+echo "Initializing multiple PostgreSQL databases..."
+chmod +x ./scripts/init-multiple-postgres-databases.sh
+./scripts/init-multiple-postgres-databases.sh
+ 
+# Wait for services to be ready
+echo "Waiting for services to start..."
+sleep 10
 
 echo "System startup completed!"

@@ -31,12 +31,17 @@ services:
   postgres:
     image: postgres:15-alpine
     environment:
-      # Keycloak database
-      POSTGRES_DB: ${POSTGRES_KEYCLOAK_DB}
+      # Use a temporary initial database
+      POSTGRES_DB: postgres
       POSTGRES_USER: ${POSTGRES_KEYCLOAK_USER}
       POSTGRES_PASSWORD: ${POSTGRES_KEYCLOAK_PASSWORD}
-      # Create additional database for task-manager
-      POSTGRES_MULTIPLE_DATABASES: "${POSTGRES_DB}"
+      # Environment variables for additional databases
+      POSTGRES_ADDITIONAL_DBS: "${POSTGRES_KEYCLOAK_DB},${POSTGRES_DB}"
+      POSTGRES_ADDITIONAL_USERS: "${POSTGRES_KEYCLOAK_USER},${POSTGRES_USER}"
+      POSTGRES_ADDITIONAL_PASSWORDS: "${POSTGRES_KEYCLOAK_PASSWORD},${POSTGRES_PASSWORD}"
+      # Fix locale issues
+      LANG: en_US.utf8
+      LC_ALL: en_US.utf8
     volumes:
       - postgres_data:/var/lib/postgresql/data
       - ./scripts/init-multiple-postgres-databases.sh:/docker-entrypoint-initdb.d/init-multiple-postgres-databases.sh
@@ -94,7 +99,13 @@ services:
     environment:
       SPRING_PROFILES_ACTIVE: docker
       KEYCLOAK_AUTH_SERVER_URL: http://keycloak:8080/auth
+      KEYCLOAK_REALM: ${KEYCLOAK_REALM}
+      KEYCLOAK_CLIENT_ID: ${KEYCLOAK_CLIENT_ID}
+      KEYCLOAK_CLIENT_SECRET: ${KEYCLOAK_CLIENT_SECRET}
       REDIS_HOST: redis
+      REDIS_PORT: 6379
+      SPRING_REDIS_HOST: redis
+      SPRING_REDIS_PORT: 6379
     ports:
       - "${AUTH_SERVICE_PORT}:8082"
     depends_on:
@@ -148,4 +159,4 @@ networks:
     driver: bridge
 
 volumes:
-  postgres_data: 
+  postgres_data:
