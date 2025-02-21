@@ -1,0 +1,29 @@
+spring:
+  application:
+    name: auth-service
+  security:
+    oauth2:
+      client:
+        registration:
+          keycloak:
+            client-id: llm-system
+            client-secret: ${KEYCLOAK_CLIENT_SECRET}
+            authorization-grant-type: authorization_code
+            scope: openid,profile,email
+        provider:
+          keycloak:
+            issuer-uri: http://keycloak:8180/realms/llm-system
+            user-name-attribute: preferred_username
+
+server:
+  port: 8081
+
+keycloak:
+  realm: llm-system
+  auth-server-url: http://keycloak:8180/auth
+  ssl-required: external
+  resource: llm-system
+  credentials:
+    secret: ${KEYCLOAK_CLIENT_SECRET}
+  use-resource-role-mappings: true
+  bearer-only: true 

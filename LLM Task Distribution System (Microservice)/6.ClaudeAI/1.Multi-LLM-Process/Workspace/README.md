@@ -364,22 +364,204 @@ docker-compose rm -f init-keycloak-db keycloak
 docker volume rm workspace_keycloak_data
 ```
 
-
 2. Khởi động lại:
 ```bash
 docker-compose up -d keycloak
 ```
-
-
 
 3. Kiểm tra log:
 ```bash
 docker-compose logs -f keycloak
 ```
 
-
-
 Lưu ý:
 - Đảm bảo database Keycloak đã được tạo
 - Kiểm tra biến môi trường trong file .env
 - Theo dõi log để phát hiện lỗi chi tiết
+
+
+####
+
+
+Lỗi này xảy ra do thiếu `jq` và token không được tạo thành công. Hãy sửa lại script như sau:
+
+1. Đầu tiên, cài đặt `jq`:
+
+```bash
+sudo apt-get update
+sudo apt-get install jq
+```
+
+2. Sửa lại file init-keycloak.sh:
+
+````bash:enterprise-llm-system/scripts/init-keycloak.sh
+#!/bin/bash
+
+# Wait for Keycloak to start
+echo "Waiting for Keycloak to start..."
+max_attempts=30
+attempt=1
+
+while ! curl -s http://localhost:8180/health > /dev/null; do
+    if [ $attempt -gt $max_attempts ]; then
+        echo "Keycloak failed to start after $max_attempts attempts"
+        exit 1
+    fi
+    echo "Attempt $attempt: Keycloak not ready, waiting..."
+    sleep 10
+    attempt=$((attempt + 1))
+done
+
+echo "Keycloak is running"
+
+# Get admin token
+echo "Getting admin token..."
+TOKEN_RESPONSE=$(curl -s -X POST http://localhost:8180/realms/master/protocol/openid-connect/token \
+    -H 'Content-Type: application/x-www-form-urlencoded' \
+    --data-urlencode "client_id=admin-cli" \
+    --data-urlencode "username=admin" \
+    --data-urlencode "password=admin" \
+    --data-urlencode "grant_type=password")
+
+if [ -z "$TOKEN_RESPONSE" ]; then
+    echo "Failed to get token response"
+    exit 1
+fi
+
+ADMIN_TOKEN=$(echo $TOKEN_RESPONSE | jq -r '.access_token')
+
+if [ -z "$ADMIN_TOKEN" ] || [ "$ADMIN_TOKEN" = "null" ]; then
+    echo "Failed to extract token from response:"
+    echo $TOKEN_RESPONSE
+    exit 1
+fi
+
+echo "Admin token obtained successfully"
+
+# Create realm
+echo "Creating realm..."
+REALM_RESPONSE=$(curl -s -X POST http://localhost:8180/admin/realms \
+    -H "Authorization: Bearer $ADMIN_TOKEN" \
+    -H "Content-Type: application/json" \
+    -d @configs/keycloak/realm-config.json)
+
+if [ ! -z "$REALM_RESPONSE" ]; then
+    echo "Realm creation response:"
+    echo $REALM_RESPONSE
+fi
+
+# Verify realm creation
+echo "Verifying realm creation..."
+VERIFY_RESPONSE=$(curl -s -X GET http://localhost:8180/admin/realms/llm-system \
+    -H "Authorization: Bearer $ADMIN_TOKEN")
+
+if [ -z "$VERIFY_RESPONSE" ]; then
+    echo "Failed to verify realm creation"
+    exit 1
+fi
+
+echo "Keycloak setup completed successfully!"
+````
+
+3. Sửa lại docker-compose.yml để thêm healthcheck:
+
+````yaml:enterprise-llm-system/docker-compose.yml
+services:
+  keycloak:
+    image: quay.io/keycloak/keycloak:latest
+    environment:
+      KEYCLOAK_ADMIN: admin
+      KEYCLOAK_ADMIN_PASSWORD: admin
+      KC_DB: postgres
+      KC_DB_URL: jdbc:postgresql://postgres:5432/keycloak
+      KC_DB_USERNAME: keycloak
+      KC_DB_PASSWORD: keycloak
+      KC_HOSTNAME: localhost
+      KC_HEALTH_ENABLED: "true"
+    ports:
+      - "8180:8080"
+    volumes:
+      - ./configs/keycloak:/opt/keycloak/data/import
+    command:
+      - start-dev
+      - --import-realm
+    depends_on:
+      postgres:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8080/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+    networks:
+      - security
+
+  postgres:
+    image: postgres:15-alpine
+    environment:
+      POSTGRES_DB: keycloak
+      POSTGRES_USER: keycloak
+      POSTGRES_PASSWORD: keycloak
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U keycloak"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    networks:
+      - security
+
+networks:
+  security:
+
+volumes:
+  postgres_data:
+````
+
+4. Khởi động lại hệ thống:
+
+```bash
+# Stop và xóa containers cũ
+docker-compose down -v
+
+# Khởi động lại
+docker-compose up -d
+
+# Đợi một chút cho services khởi động
+sleep 30
+
+# Cấp quyền thực thi cho script
+chmod +x scripts/init-keycloak.sh
+
+# Chạy script khởi tạo
+./scripts/init-keycloak.sh
+```
+
+5. Kiểm tra trạng thái:
+
+```bash
+# Kiểm tra logs
+docker-compose logs keycloak
+
+# Kiểm tra realm đã được tạo
+curl http://localhost:8180/realms/llm-system/.well-known/openid-configuration
+```
+
+6. Test lại việc lấy token:
+
+```bash
+curl -X POST http://localhost:8180/realms/llm-system/protocol/openid-connect/token \
+  -H 'Content-Type: application/x-www-form-urlencoded' \
+  --data-urlencode 'grant_type=password' \
+  --data-urlencode 'client_id=llm-system' \
+  --data-urlencode 'username=test-user' \
+  --data-urlencode 'password=test-password'
+```
+
+Nếu vẫn gặp vấn đề, bạn có thể:
+1. Truy cập Keycloak Admin Console tại http://localhost:8180/admin
+2. Đăng nhập với admin/admin
+3. Tạo realm và user thủ công qua giao diện
+
+Bạn cần thêm thông tin gì không?

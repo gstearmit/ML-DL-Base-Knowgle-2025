@@ -1,0 +1,21 @@
+# Environment variables
+configs/env/.env
+
+# IDE files
+.idea/
+.vscode/
+
+# Build files
+**/target/
+**/build/
+
+# Logs
+logs/
+*.log
+
+# Docker volumes
+docker/volumes/
+
+# System files
+.DS_Store
+Thumbs.db 

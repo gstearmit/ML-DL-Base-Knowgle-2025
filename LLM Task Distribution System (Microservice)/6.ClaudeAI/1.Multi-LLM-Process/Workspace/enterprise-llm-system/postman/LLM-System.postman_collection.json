@@ -1,0 +1,40 @@
+{
+  "info": {
+    "name": "LLM System API",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "item": [
+    {
+      "name": "Create Project",
+      "request": {
+        "method": "POST",
+        "header": [],
+        "url": {
+          "raw": "{{base_url}}/api/tasks/projects",
+          "host": ["{{base_url}}"],
+          "path": ["api", "tasks", "projects"]
+        },
+        "body": {
+          "mode": "raw",
+          "raw": "{\n \"projectName\": \"Test Project\",\n \"description\": \"Test Description\",\n \"priority\": 1\n}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        }
+      }
+    },
+    {
+      "name": "Create Task",
+      "request": {
+        "method": "POST", 
+        "url": "{{base_url}}/api/tasks/projects/{{projectId}}/tasks",
+        "body": {
+          "mode": "raw",
+          "raw": "{\n \"input\": \"Analyze this text...\",\n \"priority\": 1,\n \"models\": [\"gpt-4\", \"claude\"]\n}"
+        }
+      }
+    }
+  ]
+} 

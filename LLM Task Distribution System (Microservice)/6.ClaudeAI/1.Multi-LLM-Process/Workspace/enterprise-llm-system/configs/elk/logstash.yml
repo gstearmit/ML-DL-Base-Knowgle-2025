@@ -1,0 +1,20 @@
+input {
+  beats {
+    port => 5044
+  }
+}
+
+filter {
+  if [type] == "spring-boot" {
+    grok {
+      match => { "message" => "%{TIMESTAMP_ISO8601:timestamp} %{LOGLEVEL:level} %{GREEDYDATA:message}" }
+    }
+  }
+}
+
+output {
+  elasticsearch {
+    hosts => ["elasticsearch:9200"]
+    index => "llm-system-%{+YYYY.MM.dd}"
+  }
+} 
