@@ -1,6 +1,23 @@
 _format_version: "2.1"
 _transform: true
 
+consumers:
+  - username: llm-system
+    jwt_secrets:
+      - key: 7BhIiNYQ14TiVQ5b8MXLr9R2ZN_qd6lPqRb1wktU-F8
+        algorithm: RS256
+        rsa_public_key: |
+          -----BEGIN PUBLIC KEY-----
+          MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEAiPgdJ8ZTRxQ7Y5Oq8PyC
+          5qI5Q5ErXKYgUxQ5f5u7JFyYU9WjNMMp1xGYqAZ+WZEv6Wl0qwNtN1h0LyItxXEH
+          9qxL0TQj/zZxEjEqwxQqQYPvqulN4VBv9NktvPqUEQvxq1jSXX2N3vX7N7e4eQWa
+          0QGDJSjA+sJ+mJ5OE4zEYiWlDg3dX0KtZKFhxQU8pQwLtFzP0eZEsRQI4Z5h5eEx
+          F5tL5fyQmZ4XxhJfEpQIvBL6OQvjvZ7WO7TkYIXEGxGXKg3IOqhY4HwBQJUwcaS4
+          Z5ozLPwGCGmqwXbGGqhA3EwNbZsNqnhK5OoZH5ZQw2K7he5+KoaQmKxBNeZgGYoF
+          XQIDAQAB
+          -----END PUBLIC KEY-----
+        secret: keycloak-secret
+
 services:
   - name: task-service
     url: http://task-manager:8081
@@ -10,11 +27,12 @@ services:
           - /api/tasks
         strip_path: false
     plugins:
-      # - name: jwt
-      #   config:
-      #     key_claim_name: kid
-      #     claims_to_verify:
-      #       - exp
+      - name: jwt
+        config:
+          run_on_preflight: true
+          header_names:
+            - Authorization
+          key_claim_name: kid
       - name: key-auth
         config:
           key_names:
