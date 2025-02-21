@@ -288,8 +288,13 @@ curl http://localhost/api/llm/health
 curl http://localhost:8001/status  # Kong Admin API
 curl http://localhost:8002         # Kong Manager UI
 curl http://localhost/manager      # Kong Manager qua Nginx
+error :
+  This page isn’t working
+  localhost didn’t send any data.
+  ERR_EMPTY_RESPONSE
 
- truy cập Spark Web UI qua http://localhost:8184
+
+## truy cập Spark Web UI qua http://localhost:8184
 
 # 5. Kiểm tra services và routes
 curl http://localhost:8001/services | jq .
@@ -349,9 +354,6 @@ Lưu ý:
 
 ## Restart nginx:
 docker-compose restart nginx
-
-
-
 
 
 # container Keycloak 

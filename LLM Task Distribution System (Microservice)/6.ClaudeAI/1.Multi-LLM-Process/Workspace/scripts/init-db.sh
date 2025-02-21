@@ -9,7 +9,8 @@ set -e
 source .env
 
 # Configuration
-LOG_FILE="/var/log/db-init.log"
+mkdir -p ./logs
+LOG_FILE="./logs/db-init.log"
 SCHEMA_DIR="./configs/postgresql/schemas"
 
 # Color codes for output

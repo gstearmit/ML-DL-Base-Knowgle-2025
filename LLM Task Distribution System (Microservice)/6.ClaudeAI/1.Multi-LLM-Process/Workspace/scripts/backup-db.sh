@@ -9,10 +9,12 @@ set -e
 source .env
 
 # Configuration
-BACKUP_DIR="/backup"
+mkdir -p ./backups
+mkdir -p ./logs
+BACKUP_DIR="./backups"
 DATE=$(date +%Y%m%d_%H%M%S)
 RETENTION_DAYS=30
-LOG_FILE="/var/log/db-backup.log"
+LOG_FILE="./logs/db-backup.log"
 
 # Color codes for output
 RED='\033[0;31m'
