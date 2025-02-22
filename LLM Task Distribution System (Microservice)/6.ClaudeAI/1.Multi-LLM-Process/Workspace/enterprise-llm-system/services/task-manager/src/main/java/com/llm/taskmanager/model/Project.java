@@ -2,15 +2,18 @@ package com.llm.taskmanager.model;
 
 import lombok.Data;
 import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.ObjectMapper;
+import com.vladmihalcea.hibernate.type.json.JsonBinaryType;
 
 import javax.persistence.*;
+import org.hibernate.annotations.Type;
+import org.hibernate.annotations.TypeDef;
 import java.time.ZonedDateTime;
 import java.util.UUID;
 
 @Entity
 @Table(name = "projects")
 @Data
+@TypeDef(name = "jsonb", typeClass = JsonBinaryType.class)
 public class Project {
     @Id
     @GeneratedValue(strategy = GenerationType.AUTO)
@@ -44,57 +47,13 @@ public class Project {
     @Column(name = "deadline")
     private ZonedDateTime deadline;
 
+    @Type(type = "jsonb")
     @Column(name = "metadata", columnDefinition = "jsonb")
-    private String metadataJson;
-
-    @Column(name = "settings", columnDefinition = "jsonb")
-    private String settingsJson;
-
-    @Transient
     private JsonNode metadata;
 
-    @Transient
+    @Type(type = "jsonb")
+    @Column(name = "settings", columnDefinition = "jsonb")
     private JsonNode settings;
-
-    public JsonNode getMetadata() {
-        if (metadata == null && metadataJson != null) {
-            try {
-                metadata = new ObjectMapper().readTree(metadataJson);
-            } catch (Exception e) {
-                throw new RuntimeException("Error parsing metadata", e);
-            }
-        }
-        return metadata;
-    }
-
-    public void setMetadata(JsonNode metadata) {
-        this.metadata = metadata;
-        try {
-            this.metadataJson = new ObjectMapper().writeValueAsString(metadata);
-        } catch (Exception e) {
-            throw new RuntimeException("Error serializing metadata", e);
-        }
-    }
-
-    public JsonNode getSettings() {
-        if (settings == null && settingsJson != null) {
-            try {
-                settings = new ObjectMapper().readTree(settingsJson);
-            } catch (Exception e) {
-                throw new RuntimeException("Error parsing settings", e);
-            }
-        }
-        return settings;
-    }
-
-    public void setSettings(JsonNode settings) {
-        this.settings = settings;
-        try {
-            this.settingsJson = new ObjectMapper().writeValueAsString(settings);
-        } catch (Exception e) {
-            throw new RuntimeException("Error serializing settings", e);
-        }
-    }
 
     @PrePersist
     protected void onCreate() {
