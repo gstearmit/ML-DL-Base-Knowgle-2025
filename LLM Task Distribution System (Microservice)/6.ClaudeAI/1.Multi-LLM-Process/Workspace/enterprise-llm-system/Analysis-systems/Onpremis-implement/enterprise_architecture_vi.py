@@ -14,6 +14,8 @@ from diagrams.k8s.compute import Pod, StatefulSet
 from diagrams.generic.network import Firewall
 from diagrams.generic.storage import Storage
 from diagrams.custom import Custom 
+from diagrams.onprem.ci import Jenkins
+from diagrams.onprem.vcs import Git, Gitlab
 
 # Định nghĩa màu sắc cho các luồng xử lý
 EDGE_COLORS = {
@@ -22,7 +24,8 @@ EDGE_COLORS = {
     "warning": "#FDD835",     # Giám sát
     "error": "#E53935",       # Xử lý lỗi
     "info": "#00ACC1",        # Luồng dữ liệu
-    "success": "#4CAF50"      # Xử lý thành công
+    "success": "#4CAF50",      # Xử lý thành công
+    "cicd": "#9C27B0"        # Luồng CI/CD
 }
 
 # Cấu hình style cho nodes
@@ -33,7 +36,7 @@ NODE_CONFIG = {
 }
 
 with Diagram(
-    "Final On-Premises Multi-LLM System Architecture",
+    "Final On-Premises Architecture with CICD",
     show=True,
     direction="TB",
     graph_attr={
@@ -71,7 +74,7 @@ with Diagram(
         transformer = Pod("Data Transformer\nApache NiFi")
         
         kong >> validator >> sanitizer >> schema >> transformer
-
+ 
     # 4. Tầng Điều Phối Tác Vụ
     with Cluster("4. Tầng Điều Phối Tác Vụ"):
         task_mgr = StatefulSet("K8s Task Manager")
@@ -169,3 +172,44 @@ with Diagram(
         k8s_scaling,
         collector
     ]
+
+      # New CI/CD Cluster
+    with Cluster("11.CI/CD Pipeline"):
+        gitlab = Gitlab("GitLab Server")
+        gitlab_runner = Custom("GitLab Runner", "./icons/gitlab-runner.png")
+        jenkins = Jenkins("Jenkins Server")
+        sonarqube = Custom("SonarQube", "./icons/sonarqube.png")
+        registry = Docker("Container Registry")
+        
+        # CI/CD Flow
+        gitlab >> Edge(color=EDGE_COLORS["cicd"]) >> gitlab_runner
+        gitlab_runner >> Edge(color=EDGE_COLORS["cicd"]) >> [sonarqube, registry]
+        gitlab >> Edge(color=EDGE_COLORS["cicd"]) >> jenkins
+        jenkins >> Edge(color=EDGE_COLORS["cicd"]) >> registry
+
+    
+    # Add CI/CD Integration connections
+    registry >> Edge(color=EDGE_COLORS["cicd"]) >> [
+        validator,
+        sanitizer,
+        schema,
+        transformer,
+        task_mgr,
+        llm_orch,
+        task_analyzer,
+        account_svc,
+        merger,
+        result_analyzer,
+        final_proc
+    ]
+
+    # Add monitoring integration for CI/CD
+    gitlab >> Edge(color=EDGE_COLORS["warning"]) >> prom
+    jenkins >> Edge(color=EDGE_COLORS["warning"]) >> prom
+    sonarqube >> Edge(color=EDGE_COLORS["warning"]) >> grafana
+
+    # Add backup integration for CI/CD
+    [gitlab, registry] >> Edge(color=EDGE_COLORS["info"]) >> backup
+
+    # Add security integration for CI/CD
+    keycloak >> Edge(color=EDGE_COLORS["primary"]) >> [gitlab, jenkins]    

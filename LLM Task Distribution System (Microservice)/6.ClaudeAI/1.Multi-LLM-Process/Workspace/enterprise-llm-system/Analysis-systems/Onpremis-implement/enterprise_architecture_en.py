@@ -19,6 +19,8 @@ from diagrams.k8s.compute import Pod, StatefulSet
 from diagrams.generic.network import Firewall
 from diagrams.generic.storage import Storage
 from diagrams.custom import Custom 
+from diagrams.onprem.ci import Jenkins
+from diagrams.onprem.vcs import Git, Gitlab
 
 # System-wide configuration
 GRAPH_ATTR = {
@@ -37,7 +39,8 @@ EDGE_COLORS = {
     "warning": "#FDD835",     # Monitoring alerts
     "error": "#E53935",       # Error handling
     "info": "#00ACC1",        # Data flow
-    "success": "#4CAF50"      # Successful completion
+    "success": "#4CAF50",      # Successful completion
+    "cicd": "#9C27B0"        # Luồng CI/CD
 }
 
 # Node styling configuration
@@ -187,6 +190,47 @@ def create_enterprise_architecture():
             k8s_scaling,
             collector
         ]
+
+           # New CI/CD Cluster
+        with Cluster("11.CI/CD Pipeline"):
+            gitlab = Gitlab("GitLab Server")
+            gitlab_runner = Custom("GitLab Runner", "./icons/gitlab-runner.png")
+            jenkins = Jenkins("Jenkins Server")
+            sonarqube = Custom("SonarQube", "./icons/sonarqube.png")
+            registry = Docker("Container Registry")
+            
+            # CI/CD Flow
+            gitlab >> Edge(color=EDGE_COLORS["cicd"]) >> gitlab_runner
+            gitlab_runner >> Edge(color=EDGE_COLORS["cicd"]) >> [sonarqube, registry]
+            gitlab >> Edge(color=EDGE_COLORS["cicd"]) >> jenkins
+            jenkins >> Edge(color=EDGE_COLORS["cicd"]) >> registry
+
+        
+        # Add CI/CD Integration connections
+        registry >> Edge(color=EDGE_COLORS["cicd"]) >> [
+            validator,
+            sanitizer,
+            schema,
+            transformer,
+            task_mgr,
+            llm_orch,
+            task_analyzer,
+            account_svc,
+            merger,
+            result_analyzer,
+            final_proc
+        ]
+
+        # Add monitoring integration for CI/CD
+        gitlab >> Edge(color=EDGE_COLORS["warning"]) >> prom
+        jenkins >> Edge(color=EDGE_COLORS["warning"]) >> prom
+        sonarqube >> Edge(color=EDGE_COLORS["warning"]) >> grafana
+
+        # Add backup integration for CI/CD
+        [gitlab, registry] >> Edge(color=EDGE_COLORS["info"]) >> backup
+
+        # Add security integration for CI/CD
+        keycloak >> Edge(color=EDGE_COLORS["primary"]) >> [gitlab, jenkins]    
 
 if __name__ == "__main__":
     create_enterprise_architecture()

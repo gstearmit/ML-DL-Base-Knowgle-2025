@@ -142,7 +142,7 @@
 			  ],
 			  "body": {
 				"mode": "raw",
-				"raw": "{\n    \"projectId\": \"{{projectId}}\",\n    \"userId\": \"{{userId}}\",\n    \"title\": \"Implementation Task\",\n    \"description\": \"Detailed task description\",\n    \"taskType\": \"PROCESSING\",\n    \"inputData\": \"Sample input data\",\n    \"priority\": \"HIGH\",\n    \"deadline\": \"2025-12-31T23:59:59Z\",\n    \"parentTaskId\": null,\n    \"executionOrder\": 1,\n    \"assignees\": [\"user-123\", \"user-456\"],\n    \"labels\": [\"backend\", \"critical\"],\n    \"estimatedHours\": 8,\n    \"metadata\": {\n        \"complexity\": \"medium\",\n        \"domain\": \"backend\"\n    }\n}",
+				"raw": "{\n    \"projectId\": \"{{projectId}}\",\n    \"userId\": \"{{userId}}\",\n    \"taskType\": \"PROCESSING\",\n    \"inputData\": {\n        \"key1\": \"value1\",\n        \"key2\": \"value2\"\n    },\n    \"priority\": 1,\n    \"deadline\": \"2025-12-31T23:59:59Z\",\n    \"parentTaskId\": null,\n    \"executionOrder\": 1,\n    \"metadata\": {\n        \"complexity\": \"medium\",\n        \"domain\": \"backend\"\n    }\n}",
 				"options": {
 				  "raw": {
 					"language": "json"
@@ -157,7 +157,7 @@
 			},
 			"response": [
 			  {
-				"status": "201",
+				"status": "200",
 				"header": [
 				  {
 					"key": "Content-Type",
@@ -166,7 +166,7 @@
 				],
 				"body": {
 				  "mode": "raw",
-				  "raw": "{\n    \"id\": \"task-123\",\n    \"projectId\": \"proj-123\",\n    \"userId\": \"user-123\",\n    \"title\": \"Implementation Task\",\n    \"description\": \"Detailed task description\",\n    \"taskType\": \"PROCESSING\",\n    \"status\": \"CREATED\",\n    \"inputData\": \"Sample input data\",\n    \"priority\": \"HIGH\",\n    \"deadline\": \"2025-12-31T23:59:59Z\",\n    \"parentTaskId\": null,\n    \"executionOrder\": 1,\n    \"assignees\": [\"user-123\", \"user-456\"],\n    \"labels\": [\"backend\", \"critical\"],\n    \"estimatedHours\": 8,\n    \"metadata\": {\n        \"complexity\": \"medium\",\n        \"domain\": \"backend\"\n    },\n    \"createdAt\": \"2025-01-01T00:00:00Z\",\n    \"updatedAt\": \"2025-01-01T00:00:00Z\"\n}"
+				  "raw": "{\n    \"taskId\": \"task-123\",\n    \"projectId\": \"proj-123\",\n    \"taskType\": \"PROCESSING\",\n    \"status\": \"pending\",\n    \"priority\": 1,\n    \"createdAt\": \"2025-01-01T00:00:00Z\",\n    \"deadline\": \"2025-12-31T23:59:59Z\",\n    \"inputData\": {\n        \"key1\": \"value1\",\n        \"key2\": \"value2\"\n    },\n    \"metadata\": {\n        \"complexity\": \"medium\",\n        \"domain\": \"backend\"\n    }\n}"
 				}
 			  }
 			]
@@ -202,19 +202,24 @@
 				  "value": "Bearer {{token}}"
 				}
 			  ],
-			  "body": {
-				"mode": "raw",
-				"raw": "{\n    \"status\": \"{{status}}\",\n    \"changedBy\": \"{{userId}}\",\n    \"reason\": \"{{reason}}\",\n    \"comment\": \"Additional context for status change\",\n    \"timeSpentHours\": 4\n}",
-				"options": {
-				  "raw": {
-					"language": "json"
-				  }
-				}
-			  },
 			  "url": {
-				"raw": "{{base_url}}/api/tasks/{{taskId}}/status",
+				"raw": "{{base_url}}/api/tasks/{{taskId}}/status?status={{status}}&changedBy={{userId}}&reason={{reason}}",
 				"host": ["{{base_url}}"],
-				"path": ["api", "tasks", "{{taskId}}", "status"]
+				"path": ["api", "tasks", "{{taskId}}", "status"],
+				"query": [
+					{
+						"key": "status",
+						"value": "{{status}}"
+					},
+					{
+						"key": "changedBy",
+						"value": "{{userId}}"
+					},
+					{
+						"key": "reason",
+						"value": "{{reason}}"
+					}
+				]
 			  }
 			}
 		  }
@@ -224,7 +229,7 @@
 	"variable": [
 	  {
 		"key": "base_url",
-		"value": "http://localhost:8080",
+		"value": "http://localhost:8081",
 		"type": "string"
 	  },
 	  {
@@ -258,4 +263,4 @@
 		"type": "string"
 	  }
 	]
-  }
+}

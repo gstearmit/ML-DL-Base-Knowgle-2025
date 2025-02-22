@@ -52,17 +52,18 @@ public class TaskController {
 
     @PostMapping("/tasks")
     public ResponseEntity<TaskResponse> createTask(@Valid @RequestBody TaskRequest request) {
-        Task task = new Task();
-        task.setProject(taskService.getProject(request.getProjectId()));
-        task.setUserId(request.getUserId());
-        task.setTaskType(request.getTaskType());
-        task.setInputData(request.getInputData());
-        task.setPriority(request.getPriority());
-        task.setDeadline(request.getDeadline());
-        task.setParentTask(request.getParentTaskId() != null ? 
-            taskService.getTask(request.getParentTaskId()) : null);
-        task.setExecutionOrder(request.getExecutionOrder());
-        task.setMetadata(request.getMetadata());
+        Task task = Task.builder()
+            .project(taskService.getProject(request.getProjectId()))
+            .userId(request.getUserId())
+            .taskType(request.getTaskType())
+            .inputData(request.getInputData())
+            .priority(request.getPriority() != null ? request.getPriority() : 1)
+            .deadline(request.getDeadline())
+            .parentTask(request.getParentTaskId() != null ? 
+                taskService.getTask(request.getParentTaskId()) : null)
+            .executionOrder(request.getExecutionOrder())
+            .metadata(request.getMetadata())
+            .build();
 
         Task createdTask = taskService.createTask(task);
 

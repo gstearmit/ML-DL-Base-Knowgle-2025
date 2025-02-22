@@ -1,16 +1,25 @@
 package com.llm.taskmanager.model;
 
 import lombok.Data;
+import lombok.Builder;
+import lombok.NoArgsConstructor;
+import lombok.AllArgsConstructor;
 import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.ObjectMapper;
+import com.vladmihalcea.hibernate.type.json.JsonBinaryType;
 
 import javax.persistence.*;
+import org.hibernate.annotations.Type;
+import org.hibernate.annotations.TypeDef;
 import java.time.ZonedDateTime;
 import java.util.UUID;
 
 @Entity
 @Table(name = "tasks")
 @Data
+@Builder
+@NoArgsConstructor
+@AllArgsConstructor
+@TypeDef(name = "jsonb", typeClass = JsonBinaryType.class)
 public class Task {
     @Id
     @GeneratedValue(strategy = GenerationType.AUTO)
@@ -28,16 +37,20 @@ public class Task {
     private String taskType;
 
     @Column(name = "priority")
+    @Builder.Default
     private Integer priority = 1;
 
     @Column(name = "status", nullable = false)
+    @Builder.Default
     private String status = "pending";
 
-    @Column(name = "input_data", columnDefinition = "jsonb", nullable = false)
-    private String inputDataJson;
+    @Type(type = "jsonb")
+    @Column(name = "input_data", columnDefinition = "jsonb")
+    private JsonNode inputData;
 
+    @Type(type = "jsonb")
     @Column(name = "output_data", columnDefinition = "jsonb")
-    private String outputDataJson;
+    private JsonNode outputData;
 
     @Column(name = "error_message")
     private String errorMessage;
@@ -61,9 +74,11 @@ public class Task {
     private UUID assignedWorkerId;
 
     @Column(name = "retry_count")
+    @Builder.Default
     private Integer retryCount = 0;
 
     @Column(name = "max_retries")
+    @Builder.Default
     private Integer maxRetries = 3;
 
     @ManyToOne(fetch = FetchType.LAZY)
@@ -73,77 +88,9 @@ public class Task {
     @Column(name = "execution_order")
     private Integer executionOrder;
 
+    @Type(type = "jsonb")
     @Column(name = "metadata", columnDefinition = "jsonb")
-    private String metadataJson;
-
-    @Transient
-    private JsonNode inputData;
-
-    @Transient
-    private JsonNode outputData;
-
-    @Transient
     private JsonNode metadata;
-
-    public JsonNode getInputData() {
-        if (inputData == null && inputDataJson != null) {
-            try {
-                inputData = new ObjectMapper().readTree(inputDataJson);
-            } catch (Exception e) {
-                throw new RuntimeException("Error parsing input data", e);
-            }
-        }
-        return inputData;
-    }
-
-    public void setInputData(JsonNode inputData) {
-        this.inputData = inputData;
-        try {
-            this.inputDataJson = new ObjectMapper().writeValueAsString(inputData);
-        } catch (Exception e) {
-            throw new RuntimeException("Error serializing input data", e);
-        }
-    }
-
-    public JsonNode getOutputData() {
-        if (outputData == null && outputDataJson != null) {
-            try {
-                outputData = new ObjectMapper().readTree(outputDataJson);
-            } catch (Exception e) {
-                throw new RuntimeException("Error parsing output data", e);
-            }
-        }
-        return outputData;
-    }
-
-    public void setOutputData(JsonNode outputData) {
-        this.outputData = outputData;
-        try {
-            this.outputDataJson = new ObjectMapper().writeValueAsString(outputData);
-        } catch (Exception e) {
-            throw new RuntimeException("Error serializing output data", e);
-        }
-    }
-
-    public JsonNode getMetadata() {
-        if (metadata == null && metadataJson != null) {
-            try {
-                metadata = new ObjectMapper().readTree(metadataJson);
-            } catch (Exception e) {
-                throw new RuntimeException("Error parsing metadata", e);
-            }
-        }
-        return metadata;
-    }
-
-    public void setMetadata(JsonNode metadata) {
-        this.metadata = metadata;
-        try {
-            this.metadataJson = new ObjectMapper().writeValueAsString(metadata);
-        } catch (Exception e) {
-            throw new RuntimeException("Error serializing metadata", e);
-        }
-    }
 
     @PrePersist
     protected void onCreate() {
