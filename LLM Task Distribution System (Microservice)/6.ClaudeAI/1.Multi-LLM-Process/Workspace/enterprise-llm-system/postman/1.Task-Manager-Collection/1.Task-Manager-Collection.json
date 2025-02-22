@@ -1,167 +1,261 @@
 {
 	"info": {
-		"_postman_id": "task-manager-collection",
-		"name": "Task Manager API",
-		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+	  "_postman_id": "task-manager-collection",
+	  "name": "Task Manager API",
+	  "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
 	},
 	"item": [
-		{
-			"name": "Projects",
-			"item": [
+	  {
+		"name": "Projects",
+		"item": [
+		  {
+			"name": "Create Project",
+			"request": {
+			  "method": "POST",
+			  "header": [
 				{
-					"name": "Create Project",
-					"request": {
-						"method": "POST",
-						"header": [],
-						"body": {
-							"mode": "raw",
-							"raw": "{\n    \"name\": \"Example Project\",\n    \"description\": \"Project description\"\n}",
-							"options": {
-								"raw": {
-									"language": "json"
-								}
-							}
-						},
-						"url": {
-							"raw": "{{base_url}}/api/projects",
-							"host": ["{{base_url}}"],
-							"path": ["api", "projects"]
-						}
-					}
+				  "key": "Content-Type",
+				  "value": "application/json"
 				},
 				{
-					"name": "Get Tasks by Project",
-					"request": {
-						"method": "GET",
-						"header": [],
-						"url": {
-							"raw": "{{base_url}}/api/projects/{{projectId}}/tasks",
-							"host": ["{{base_url}}"],
-							"path": ["api", "projects", "{{projectId}}", "tasks"]
-						}
-					}
-				},
-				{
-					"name": "Get Tasks by Project and Status",
-					"request": {
-						"method": "GET",
-						"header": [],
-						"url": {
-							"raw": "{{base_url}}/api/projects/{{projectId}}/tasks/status/{{status}}",
-							"host": ["{{base_url}}"],
-							"path": ["api", "projects", "{{projectId}}", "tasks", "status", "{{status}}"]
-						}
-					}
-				},
-				{
-					"name": "Get Pending Tasks by Project",
-					"request": {
-						"method": "GET",
-						"header": [],
-						"url": {
-							"raw": "{{base_url}}/api/projects/{{projectId}}/tasks/pending",
-							"host": ["{{base_url}}"],
-							"path": ["api", "projects", "{{projectId}}", "tasks", "pending"]
-						}
-					}
+				  "key": "Authorization",
+				  "value": "Bearer {{token}}"
 				}
-			]
-		},
-		{
-			"name": "Tasks",
-			"item": [
-				{
-					"name": "Get Task by ID",
-					"request": {
-						"method": "GET",
-						"header": [],
-						"url": {
-							"raw": "{{base_url}}/api/tasks/{{taskId}}",
-							"host": ["{{base_url}}"],
-							"path": ["api", "tasks", "{{taskId}}"]
-						}
-					}
-				},
-				{
-					"name": "Create Task",
-					"request": {
-						"method": "POST",
-						"header": [],
-						"body": {
-							"mode": "raw",
-							"raw": "{\n    \"projectId\": \"{{projectId}}\",\n    \"userId\": \"{{userId}}\",\n    \"taskType\": \"PROCESSING\",\n    \"inputData\": \"Sample input data\",\n    \"priority\": \"HIGH\",\n    \"deadline\": \"2025-12-31T23:59:59\",\n    \"parentTaskId\": null,\n    \"executionOrder\": 1,\n    \"metadata\": {}\n}",
-							"options": {
-								"raw": {
-									"language": "json"
-								}
-							}
-						},
-						"url": {
-							"raw": "{{base_url}}/api/tasks",
-							"host": ["{{base_url}}"],
-							"path": ["api", "tasks"]
-						}
-					}
-				},
-				{
-					"name": "Update Task Status",
-					"request": {
-						"method": "PUT",
-						"header": [],
-						"url": {
-							"raw": "{{base_url}}/api/tasks/{{taskId}}/status?status={{status}}&changedBy={{userId}}&reason={{reason}}",
-							"host": ["{{base_url}}"],
-							"path": ["api", "tasks", "{{taskId}}", "status"],
-							"query": [
-								{
-									"key": "status",
-									"value": "{{status}}"
-								},
-								{
-									"key": "changedBy",
-									"value": "{{userId}}"
-								},
-								{
-									"key": "reason",
-									"value": "{{reason}}"
-								}
-							]
-						}
-					}
+			  ],
+			  "body": {
+				"mode": "raw",
+				"raw": "{\n    \"name\": \"Example Project\",\n    \"description\": \"Project description\",\n    \"userId\": \"{{userId}}\",\n    \"metadata\": {\n        \"category\": \"development\",\n        \"tags\": [\"api\", \"backend\"]\n    },\n    \"startDate\": \"2025-01-01T00:00:00Z\",\n    \"endDate\": \"2025-12-31T23:59:59Z\"\n}",
+				"options": {
+				  "raw": {
+					"language": "json"
+				  }
 				}
+			  },
+			  "url": {
+				"raw": "{{base_url}}/api/projects",
+				"host": ["{{base_url}}"],
+				"path": ["api", "projects"]
+			  }
+			},
+			"response": [
+			  {
+				"status": "201",
+				"header": [
+				  {
+					"key": "Content-Type",
+					"value": "application/json"
+				  }
+				],
+				"body": {
+				  "mode": "raw",
+				  "raw": "{\n    \"id\": \"proj-123\",\n    \"name\": \"Example Project\",\n    \"description\": \"Project description\",\n    \"userId\": \"user-123\",\n    \"metadata\": {\n        \"category\": \"development\",\n        \"tags\": [\"api\", \"backend\"]\n    },\n    \"startDate\": \"2025-01-01T00:00:00Z\",\n    \"endDate\": \"2025-12-31T23:59:59Z\",\n    \"createdAt\": \"2025-01-01T00:00:00Z\",\n    \"updatedAt\": \"2025-01-01T00:00:00Z\"\n}"
+				}
+			  }
 			]
-		}
+		  },
+		  {
+			"name": "Get Projects",
+			"request": {
+			  "method": "GET",
+			  "header": [
+				{
+				  "key": "Authorization",
+				  "value": "Bearer {{token}}"
+				}
+			  ],
+			  "url": {
+				"raw": "{{base_url}}/api/projects",
+				"host": ["{{base_url}}"],
+				"path": ["api", "projects"]
+			  }
+			}
+		  },
+		  {
+			"name": "Get Project by ID",
+			"request": {
+			  "method": "GET",
+			  "header": [
+				{
+				  "key": "Authorization",
+				  "value": "Bearer {{token}}"
+				}
+			  ],
+			  "url": {
+				"raw": "{{base_url}}/api/projects/{{projectId}}",
+				"host": ["{{base_url}}"],
+				"path": ["api", "projects", "{{projectId}}"]
+			  }
+			}
+		  },
+		  {
+			"name": "Get Tasks by Project",
+			"request": {
+			  "method": "GET",
+			  "header": [
+				{
+				  "key": "Authorization",
+				  "value": "Bearer {{token}}"
+				}
+			  ],
+			  "url": {
+				"raw": "{{base_url}}/api/projects/{{projectId}}/tasks",
+				"host": ["{{base_url}}"],
+				"path": ["api", "projects", "{{projectId}}", "tasks"]
+			  }
+			}
+		  },
+		  {
+			"name": "Get Tasks by Project and Status",
+			"request": {
+			  "method": "GET",
+			  "header": [
+				{
+				  "key": "Authorization",
+				  "value": "Bearer {{token}}"
+				}
+			  ],
+			  "url": {
+				"raw": "{{base_url}}/api/projects/{{projectId}}/tasks/status/{{status}}",
+				"host": ["{{base_url}}"],
+				"path": ["api", "projects", "{{projectId}}", "tasks", "status", "{{status}}"]
+			  }
+			}
+		  }
+		]
+	  },
+	  {
+		"name": "Tasks",
+		"item": [
+		  {
+			"name": "Create Task",
+			"request": {
+			  "method": "POST",
+			  "header": [
+				{
+				  "key": "Content-Type",
+				  "value": "application/json"
+				},
+				{
+				  "key": "Authorization",
+				  "value": "Bearer {{token}}"
+				}
+			  ],
+			  "body": {
+				"mode": "raw",
+				"raw": "{\n    \"projectId\": \"{{projectId}}\",\n    \"userId\": \"{{userId}}\",\n    \"title\": \"Implementation Task\",\n    \"description\": \"Detailed task description\",\n    \"taskType\": \"PROCESSING\",\n    \"inputData\": \"Sample input data\",\n    \"priority\": \"HIGH\",\n    \"deadline\": \"2025-12-31T23:59:59Z\",\n    \"parentTaskId\": null,\n    \"executionOrder\": 1,\n    \"assignees\": [\"user-123\", \"user-456\"],\n    \"labels\": [\"backend\", \"critical\"],\n    \"estimatedHours\": 8,\n    \"metadata\": {\n        \"complexity\": \"medium\",\n        \"domain\": \"backend\"\n    }\n}",
+				"options": {
+				  "raw": {
+					"language": "json"
+				  }
+				}
+			  },
+			  "url": {
+				"raw": "{{base_url}}/api/tasks",
+				"host": ["{{base_url}}"],
+				"path": ["api", "tasks"]
+			  }
+			},
+			"response": [
+			  {
+				"status": "201",
+				"header": [
+				  {
+					"key": "Content-Type",
+					"value": "application/json"
+				  }
+				],
+				"body": {
+				  "mode": "raw",
+				  "raw": "{\n    \"id\": \"task-123\",\n    \"projectId\": \"proj-123\",\n    \"userId\": \"user-123\",\n    \"title\": \"Implementation Task\",\n    \"description\": \"Detailed task description\",\n    \"taskType\": \"PROCESSING\",\n    \"status\": \"CREATED\",\n    \"inputData\": \"Sample input data\",\n    \"priority\": \"HIGH\",\n    \"deadline\": \"2025-12-31T23:59:59Z\",\n    \"parentTaskId\": null,\n    \"executionOrder\": 1,\n    \"assignees\": [\"user-123\", \"user-456\"],\n    \"labels\": [\"backend\", \"critical\"],\n    \"estimatedHours\": 8,\n    \"metadata\": {\n        \"complexity\": \"medium\",\n        \"domain\": \"backend\"\n    },\n    \"createdAt\": \"2025-01-01T00:00:00Z\",\n    \"updatedAt\": \"2025-01-01T00:00:00Z\"\n}"
+				}
+			  }
+			]
+		  },
+		  {
+			"name": "Get Task by ID",
+			"request": {
+			  "method": "GET",
+			  "header": [
+				{
+				  "key": "Authorization",
+				  "value": "Bearer {{token}}"
+				}
+			  ],
+			  "url": {
+				"raw": "{{base_url}}/api/tasks/{{taskId}}",
+				"host": ["{{base_url}}"],
+				"path": ["api", "tasks", "{{taskId}}"]
+			  }
+			}
+		  },
+		  {
+			"name": "Update Task Status",
+			"request": {
+			  "method": "PUT",
+			  "header": [
+				{
+				  "key": "Content-Type",
+				  "value": "application/json"
+				},
+				{
+				  "key": "Authorization",
+				  "value": "Bearer {{token}}"
+				}
+			  ],
+			  "body": {
+				"mode": "raw",
+				"raw": "{\n    \"status\": \"{{status}}\",\n    \"changedBy\": \"{{userId}}\",\n    \"reason\": \"{{reason}}\",\n    \"comment\": \"Additional context for status change\",\n    \"timeSpentHours\": 4\n}",
+				"options": {
+				  "raw": {
+					"language": "json"
+				  }
+				}
+			  },
+			  "url": {
+				"raw": "{{base_url}}/api/tasks/{{taskId}}/status",
+				"host": ["{{base_url}}"],
+				"path": ["api", "tasks", "{{taskId}}", "status"]
+			  }
+			}
+		  }
+		]
+	  }
 	],
 	"variable": [
-		{
-			"key": "base_url",
-			"value": "http://localhost:8080",
-			"type": "string"
-		},
-		{
-			"key": "projectId",
-			"value": "",
-			"type": "string"
-		},
-		{
-			"key": "taskId",
-			"value": "",
-			"type": "string"
-		},
-		{
-			"key": "userId",
-			"value": "",
-			"type": "string"
-		},
-		{
-			"key": "status",
-			"value": "",
-			"type": "string"
-		},
-		{
-			"key": "reason",
-			"value": "",
-			"type": "string"
-		}
+	  {
+		"key": "base_url",
+		"value": "http://localhost:8080",
+		"type": "string"
+	  },
+	  {
+		"key": "token",
+		"value": "",
+		"type": "string"
+	  },
+	  {
+		"key": "projectId",
+		"value": "",
+		"type": "string"
+	  },
+	  {
+		"key": "taskId",
+		"value": "",
+		"type": "string"
+	  },
+	  {
+		"key": "userId",
+		"value": "",
+		"type": "string"
+	  },
+	  {
+		"key": "status",
+		"value": "",
+		"type": "string"
+	  },
+	  {
+		"key": "reason",
+		"value": "",
+		"type": "string"
+	  }
 	]
-}
+  }
