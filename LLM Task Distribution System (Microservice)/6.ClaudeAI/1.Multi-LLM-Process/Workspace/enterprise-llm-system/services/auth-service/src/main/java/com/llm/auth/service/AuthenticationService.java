@@ -36,4 +36,33 @@ public class AuthenticationService {
                     .build();
         }
     }
-} 
+
+    public AuthResult refreshToken(String refreshToken) {
+        try {
+            TokenInfo tokenInfo = keycloakClient.refreshToken(refreshToken);
+            tokenStore.storeToken(tokenInfo.getTokenType(), tokenInfo);
+
+            return AuthResult.builder()
+                    .accessToken(tokenInfo.getAccessToken())
+                    .refreshToken(tokenInfo.getRefreshToken())
+                    .expiresIn(tokenInfo.getExpiresIn())
+                    .build();
+        } catch (Exception e) {
+            log.error("Token refresh failed", e);
+            return AuthResult.builder()
+                    .error("token_refresh_failed")
+                    .errorDescription(e.getMessage())
+                    .build();
+        }
+    }
+
+    public void logout(String token) {
+        try {
+            keycloakClient.logout(token);
+            tokenStore.removeToken(token);
+            log.info("User logged out successfully");
+        } catch (Exception e) {
+            log.error("Logout failed", e);
+        }
+    }
+}

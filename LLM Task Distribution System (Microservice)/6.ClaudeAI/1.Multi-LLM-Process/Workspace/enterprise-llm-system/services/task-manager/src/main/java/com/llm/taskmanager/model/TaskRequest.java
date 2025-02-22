@@ -3,17 +3,30 @@ package com.llm.taskmanager.model;
 import lombok.Data;
 import javax.validation.constraints.NotBlank;
 import javax.validation.constraints.NotNull;
+import com.fasterxml.jackson.databind.JsonNode;
+import java.time.ZonedDateTime;
+import java.util.UUID;
 
 @Data
 public class TaskRequest {
+    @NotNull
+    private UUID projectId;
+
+    @NotNull
+    private UUID userId;
+
     @NotBlank
-    private String input;
+    private String taskType;
 
-    @NotNull
-    private String[] models;
+    private JsonNode inputData;
 
-    @NotNull
-    private Integer priority;
+    private Integer priority = 1;
 
-    private String userId;
-} 
+    private ZonedDateTime deadline;
+
+    private UUID parentTaskId;
+
+    private Integer executionOrder;
+
+    private JsonNode metadata;
+}

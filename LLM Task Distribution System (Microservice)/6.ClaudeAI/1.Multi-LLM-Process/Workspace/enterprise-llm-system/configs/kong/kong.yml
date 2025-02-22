@@ -9,6 +9,7 @@ services:
         paths:
           - /api/tasks
         strip_path: false
+        preserve_host: true
     plugins:
       - name: cors
         config:
@@ -35,3 +36,22 @@ services:
         paths:
           - /api/auth
         strip_path: false
+        preserve_host: true
+    plugins:
+      - name: cors
+        config:
+          origins:
+            - "*"
+          methods:
+            - GET
+            - POST
+            - PUT
+            - DELETE
+            - OPTIONS
+          headers:
+            - Authorization
+            - Content-Type
+          exposed_headers:
+            - Authorization
+          credentials: true
+          max_age: 3600

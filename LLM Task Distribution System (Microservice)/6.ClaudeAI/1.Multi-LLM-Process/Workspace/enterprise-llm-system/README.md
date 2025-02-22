@@ -4,6 +4,26 @@ http://localhost:8180/realms/llm-system
 
 http://localhost:8180/realms/llm-system/protocol/openid-connect/certs
 
+
+Task Manager API: http://localhost:8080/api/tasks
+Auth Service API: http://localhost:8080/api/auth
+Keycloak Admin Console: http://localhost:8180
+
+Kiểm tra logs để theo dõi quá trình khởi động:
+docker compose logs -f
+Thứ tự khởi động sẽ là:
+
+PostgreSQL khởi động và khởi tạo databases
+Keycloak đợi PostgreSQL healthy và khởi động
+Kong API Gateway khởi động
+Auth Service và Task Manager đợi các dependency sẵn sàng rồi khởi động
+Các cải thiện này sẽ giúp:
+
+Đảm bảo các service khởi động theo đúng thứ tự
+Tự động thử lại khi gặp lỗi
+Kiểm tra health tốt hơn
+Giám sát trạng thái service dễ dàng hơn
+
 ## Prerequisites
 
 - Docker and Docker Compose

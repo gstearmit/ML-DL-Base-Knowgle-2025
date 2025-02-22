@@ -1,0 +1,167 @@
+{
+	"info": {
+		"_postman_id": "task-manager-collection",
+		"name": "Task Manager API",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+	},
+	"item": [
+		{
+			"name": "Projects",
+			"item": [
+				{
+					"name": "Create Project",
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"name\": \"Example Project\",\n    \"description\": \"Project description\"\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{base_url}}/api/projects",
+							"host": ["{{base_url}}"],
+							"path": ["api", "projects"]
+						}
+					}
+				},
+				{
+					"name": "Get Tasks by Project",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/api/projects/{{projectId}}/tasks",
+							"host": ["{{base_url}}"],
+							"path": ["api", "projects", "{{projectId}}", "tasks"]
+						}
+					}
+				},
+				{
+					"name": "Get Tasks by Project and Status",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/api/projects/{{projectId}}/tasks/status/{{status}}",
+							"host": ["{{base_url}}"],
+							"path": ["api", "projects", "{{projectId}}", "tasks", "status", "{{status}}"]
+						}
+					}
+				},
+				{
+					"name": "Get Pending Tasks by Project",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/api/projects/{{projectId}}/tasks/pending",
+							"host": ["{{base_url}}"],
+							"path": ["api", "projects", "{{projectId}}", "tasks", "pending"]
+						}
+					}
+				}
+			]
+		},
+		{
+			"name": "Tasks",
+			"item": [
+				{
+					"name": "Get Task by ID",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/api/tasks/{{taskId}}",
+							"host": ["{{base_url}}"],
+							"path": ["api", "tasks", "{{taskId}}"]
+						}
+					}
+				},
+				{
+					"name": "Create Task",
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"projectId\": \"{{projectId}}\",\n    \"userId\": \"{{userId}}\",\n    \"taskType\": \"PROCESSING\",\n    \"inputData\": \"Sample input data\",\n    \"priority\": \"HIGH\",\n    \"deadline\": \"2025-12-31T23:59:59\",\n    \"parentTaskId\": null,\n    \"executionOrder\": 1,\n    \"metadata\": {}\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{base_url}}/api/tasks",
+							"host": ["{{base_url}}"],
+							"path": ["api", "tasks"]
+						}
+					}
+				},
+				{
+					"name": "Update Task Status",
+					"request": {
+						"method": "PUT",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/api/tasks/{{taskId}}/status?status={{status}}&changedBy={{userId}}&reason={{reason}}",
+							"host": ["{{base_url}}"],
+							"path": ["api", "tasks", "{{taskId}}", "status"],
+							"query": [
+								{
+									"key": "status",
+									"value": "{{status}}"
+								},
+								{
+									"key": "changedBy",
+									"value": "{{userId}}"
+								},
+								{
+									"key": "reason",
+									"value": "{{reason}}"
+								}
+							]
+						}
+					}
+				}
+			]
+		}
+	],
+	"variable": [
+		{
+			"key": "base_url",
+			"value": "http://localhost:8080",
+			"type": "string"
+		},
+		{
+			"key": "projectId",
+			"value": "",
+			"type": "string"
+		},
+		{
+			"key": "taskId",
+			"value": "",
+			"type": "string"
+		},
+		{
+			"key": "userId",
+			"value": "",
+			"type": "string"
+		},
+		{
+			"key": "status",
+			"value": "",
+			"type": "string"
+		},
+		{
+			"key": "reason",
+			"value": "",
+			"type": "string"
+		}
+	]
+}

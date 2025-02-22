@@ -52,4 +52,43 @@ public class KeycloakClient {
 
         return response.getBody();
     }
-} 
+
+    public TokenInfo refreshToken(String refreshToken) {
+        String tokenUrl = String.format("%s/realms/%s/protocol/openid-connect/token", keycloakUrl, realm);
+
+        HttpHeaders headers = new HttpHeaders();
+        headers.setContentType(MediaType.APPLICATION_FORM_URLENCODED);
+
+        MultiValueMap<String, String> map = new LinkedMultiValueMap<>();
+        map.add("grant_type", "refresh_token");
+        map.add("client_id", clientId);
+        map.add("client_secret", clientSecret);
+        map.add("refresh_token", refreshToken);
+
+        HttpEntity<MultiValueMap<String, String>> request = new HttpEntity<>(map, headers);
+
+        ResponseEntity<TokenInfo> response = restTemplate.postForEntity(
+                tokenUrl,
+                request,
+                TokenInfo.class
+        );
+
+        return response.getBody();
+    }
+
+    public void logout(String token) {
+        String logoutUrl = String.format("%s/realms/%s/protocol/openid-connect/logout", keycloakUrl, realm);
+
+        HttpHeaders headers = new HttpHeaders();
+        headers.setContentType(MediaType.APPLICATION_FORM_URLENCODED);
+
+        MultiValueMap<String, String> map = new LinkedMultiValueMap<>();
+        map.add("client_id", clientId);
+        map.add("client_secret", clientSecret);
+        map.add("refresh_token", token);
+
+        HttpEntity<MultiValueMap<String, String>> request = new HttpEntity<>(map, headers);
+
+        restTemplate.postForEntity(logoutUrl, request, Void.class);
+    }
+}
