@@ -1,5 +1,6 @@
 https://claude.ai/chat/b871954e-12de-4c77-a563-f54ed63130a5
 
+####  
 Tôi muốn bạn Hãy phần tích, xây dựng một plan hoàn chỉnh (Hãy bổ sung và làm rõ thêm các ý nếu còn thiếu cho ý tưởng bên dưới ) về 1 hệ thống AI như mô tả sau:
  Xây dựng Hệ thống tương tự như hệ thống https://notebooklm.google.com/
 ## idea: 
@@ -197,7 +198,8 @@ sequenceDiagram
 Để xử lý các tài liệu dài vượt quá giới hạn context window của các mô hình LLM, hệ thống sử dụng các kỹ thuật "context expansion" sau:
 
 #### a) Phân Đoạn Thông Minh (Smart Chunking)
-```xml
+
+```html
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 400">
   <!-- Background -->
   <rect width="800" height="400" fill="#f8f9fa" rx="10" ry="10" />
@@ -294,7 +296,42 @@ def semantic_chunking(document, max_tokens=3000, overlap=500):
 ```
 
 #### b) Tóm Tắt Thông Minh (Recursive Summarization)
+```mermaid
+graph TD
+    classDef document fill:#e3f2fd,stroke:#1976d2,stroke-width:2px
+    classDef chunk fill:#e8f5e9,stroke:#388e3c,stroke-width:2px
+    classDef summary fill:#fff8e1,stroke:#ffa000,stroke-width:2px
+    classDef final fill:#f3e5f5,stroke:#7b1fa2,stroke-width:2px
 
+    A[Tài liệu dài<br>100+ trang] --> B[Phân đoạn thành<br>các đoạn nhỏ]
+    B --> C1[Đoạn 1]
+    B --> C2[Đoạn 2]
+    B --> C3[Đoạn 3]
+    B --> C4[...]
+    B --> C5[Đoạn n]
+    
+    C1 --> D1[Tóm tắt đoạn 1]
+    C2 --> D2[Tóm tắt đoạn 2]
+    C3 --> D3[Tóm tắt đoạn 3]
+    C4 --> D4[...]
+    C5 --> D5[Tóm tắt đoạn n]
+    
+    D1 & D2 & D3 --> E1[Tóm tắt cấp 2<br>Nhóm 1]
+    D4 & D5 --> E2[Tóm tắt cấp 2<br>Nhóm 2]
+    
+    E1 & E2 --> F[Tóm tắt tổng thể<br>toàn tài liệu]
+    
+    A --> G{Truy vấn<br>người dùng}
+    F --> G
+    G --> H[RAG: Lấy đoạn<br>liên quan]
+    H --> I[Kết hợp tóm tắt và<br>đoạn văn gốc]
+    I --> J[Trả lời chi tiết<br>cho người dùng]
+    
+    class A document
+    class C1,C2,C3,C4,C5 chunk
+    class D1,D2,D3,D4,D5,E1,E2 summary
+    class F,I,J final
+```
 
 
 
