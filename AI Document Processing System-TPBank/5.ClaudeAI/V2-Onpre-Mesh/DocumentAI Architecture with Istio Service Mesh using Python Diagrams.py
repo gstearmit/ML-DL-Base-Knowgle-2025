@@ -12,42 +12,11 @@ from diagrams.onprem.aggregator import Fluentd
 from diagrams.elastic.elasticsearch import Elasticsearch, Kibana
 from diagrams.elastic.beats import Metricbeat, Filebeat 
 from diagrams.generic.storage import Storage as MinioStorage
-from diagrams.onprem.inmemory import Redis 
 from diagrams.generic.compute import Rack
 from diagrams.generic.place import Datacenter
 from diagrams.generic.network import Subnet
-from diagrams.onprem.tracing import Jaeger
 from diagrams.custom import Custom
-
-# Custom icons for services without built-in representations
-from urllib.request import urlretrieve
-from pathlib import Path
-
-# Create directory for custom icons if it doesn't exist
-icons_dir = Path("./custom_icons")
-icons_dir.mkdir(exist_ok=True)
-
-# Define custom icons (you would need to replace these with actual icon files)
-openai_icon = str(icons_dir / "openai.png")
-claude_icon = str(icons_dir / "claude.png")
-gemini_icon = str(icons_dir / "gemini.png")
-kiali_icon = str(icons_dir / "kiali.png")
-vector_db_icon = str(icons_dir / "vectordb.png")
-
-# Download icons (in a real scenario, you would have local files)
-# This is just a placeholder - you would replace URLs with actual icon locations
-icons = {
-    "openai_icon": ("https://example.com/icons/openai.png", openai_icon),
-    "claude_icon": ("https://example.com/icons/claude.png", claude_icon),
-    "gemini_icon": ("https://example.com/icons/gemini.png", gemini_icon),
-    "kiali_icon": ("https://example.com/icons/kiali.png", kiali_icon),
-    "vector_db_icon": ("https://example.com/icons/vectordb.png", vector_db_icon),
-}
-
-# Uncomment to download icons
-# for icon_name, (url, path) in icons.items():
-#     urlretrieve(url, path)
-
+   
 # Create the diagram
 with Diagram("DocumentAI Architecture with Istio Service Mesh", show=True, direction="TB", filename="document_ai_architecture"):
     
@@ -106,10 +75,10 @@ with Diagram("DocumentAI Architecture with Istio Service Mesh", show=True, direc
     
     # External Services
     with Cluster("External Services"):
-        # Using Custom for external AI services
-        openai = Custom("OpenAI API\nGPT-4", openai_icon)
-        claude = Custom("Anthropic API\nClaude 3", claude_icon)
-        gemini = Custom("Google API\nGemini Pro", gemini_icon)
+        # Using Custom for external AI services 
+        openai = Custom("OpenAI API\nGPT-4", "./custom_icons/openai.png")
+        claude = Custom("Anthropic API\nClaude 3", "./custom_icons/claude.png")
+        gemini = Custom("Google API\nGemini Pro", "./custom_icons/gemini.png")
         external_services = [openai, claude, gemini]
     
     # Data Layer
@@ -117,7 +86,7 @@ with Diagram("DocumentAI Architecture with Istio Service Mesh", show=True, direc
         postgres = PostgreSQL("PostgreSQL")
         minio = MinioStorage("MinIO/S3")
         redis_cache = Redis("Redis Cache")
-        vector_db = Custom("Vector Database", vector_db_icon)
+        vector_db = Custom("\n Vector Database \nPinecone/Weaviate", "./custom_icons/vectordb.png")
         data_stores = [postgres, minio, redis_cache, vector_db]
     
     # Messaging
@@ -130,7 +99,7 @@ with Diagram("DocumentAI Architecture with Istio Service Mesh", show=True, direc
     with Cluster("Observability"):
         prometheus = Prometheus("Prometheus\nMetrics")
         jaeger = Jaeger("Jaeger\nTracing")
-        kiali = Custom("Kiali\nService Mesh\nVisualization", kiali_icon)
+        kiali = Custom("Kiali\nService Mesh\nVisualization", "./custom_icons/kiali.png") 
         grafana = Grafana("Grafana\nDashboards")
         
         # ELK Stack
@@ -218,3 +187,8 @@ with Diagram("DocumentAI Architecture with Istio Service Mesh", show=True, direc
         service >> Edge(color="pink", style="dotted") >> fluentd
     
     fluentd >> elasticsearch >> kibana
+
+
+
+
+ 
