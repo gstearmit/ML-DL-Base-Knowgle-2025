@@ -45,7 +45,7 @@ Thuật toán kết hợp thông minh
 Kết quả tổng hợp
 ```
 
-![Minh họa Chunking](https://i.postimg.cc/GhTwtD4Q/chunking-diagram.png)
+![Minh họa Chunking](./Phân%20đoạn%20thông%20minh%20(Chunking).png)
 
 ### 2. Phân tầng và tóm tắt (Hierarchical Processing)
 
@@ -65,7 +65,7 @@ Khi cần trả lời:
 3. Truy xuất và xử lý phần đó
 ```
 
-![Minh họa Hierarchical Processing](https://i.postimg.cc/QMZ4xm8P/hierarchical-processing.png)
+![Minh họa Hierarchical Processing](./2.%20Phân%20tầng%20và%20tóm%20tắt%20(Hierarchical%20Processing).png
 
 ### 3. Nén token và embedding (Compression)
 
@@ -79,7 +79,7 @@ Khi cần trả lời:
 - **Semantic compression**: Giữ lại ý nghĩa nhưng viết lại ngắn gọn hơn
 - **Token-level compression**: Tối ưu hóa cách tokenize văn bản
 
-![Minh họa Token Compression](https://i.postimg.cc/fbg8C4kW/token-compression.png)
+![Minh họa Token Compression](./2.%20Phân%20tầng%20và%20tóm%20tắt%20(Hierarchical%20Processing).png)
 
 ### 4. Retrieval Augmented Generation (RAG)
 
